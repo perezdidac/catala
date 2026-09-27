@@ -17,6 +17,7 @@ export class CanvasRenderer {
 
   constructor(container: HTMLElement) {
     // Screen canvas (fills container with responsive letterbox)
+    container.innerHTML = '';
     this.screenCanvas = document.createElement('canvas');
     this.screenCanvas.id = 'game-canvas';
     this.screenCanvas.style.display = 'block';
@@ -50,8 +51,8 @@ export class CanvasRenderer {
 
   public resizeScreen(): void {
     const parent = this.screenCanvas.parentElement || document.body;
-    const availWidth = parent.clientWidth || window.innerWidth;
-    const availHeight = parent.clientHeight || window.innerHeight;
+    const availWidth = Math.max(320, parent.clientWidth || window.innerWidth || 640);
+    const availHeight = Math.max(180, parent.clientHeight || (window.innerHeight - 48) || 360);
 
     // Device pixel ratio for crisp high-DPI displays
     const dpr = window.devicePixelRatio || 1;
@@ -61,9 +62,12 @@ export class CanvasRenderer {
     this.screenCanvas.style.height = `${availHeight}px`;
 
     // Compute letterboxed 16:9 viewport
-    const scale = Math.min(
-      this.screenCanvas.width / CanvasRenderer.VIRTUAL_WIDTH,
-      this.screenCanvas.height / CanvasRenderer.VIRTUAL_HEIGHT
+    const scale = Math.max(
+      0.1,
+      Math.min(
+        this.screenCanvas.width / CanvasRenderer.VIRTUAL_WIDTH,
+        this.screenCanvas.height / CanvasRenderer.VIRTUAL_HEIGHT
+      )
     );
 
     const fitWidth = Math.floor(CanvasRenderer.VIRTUAL_WIDTH * scale);
@@ -116,14 +120,13 @@ export class CanvasRenderer {
   }
 
   /**
-   * Blits offscreen 640x360 buffer to screen with letterbox bars
+   * Blits offscreen 640x360 buffer to screen with rich railway wood framing
    */
   public renderToScreen(): void {
     this.screenCtx.imageSmoothingEnabled = false;
 
-    // Clear outer bars with deep wood / warm railway dark slate
-    this.screenCtx.fillStyle = '#100c08'; // Vintage dark railway wood
-    this.screenCtx.fillRect(0, 0, this.screenCanvas.width, this.screenCanvas.height);
+    // Draw rich wooden train workbench table for letterbox areas
+    this.drawLetterboxBackground();
 
     // Blit game buffer
     this.screenCtx.drawImage(
@@ -138,15 +141,58 @@ export class CanvasRenderer {
       this.displayRect.height
     );
 
-    // Optional border rim
-    this.screenCtx.strokeStyle = '#3a2512';
+    // Warm brass frame around 16:9 active display
+    this.screenCtx.strokeStyle = '#f59e0b';
     this.screenCtx.lineWidth = 2;
     this.screenCtx.strokeRect(
-      this.displayRect.x - 1,
-      this.displayRect.y - 1,
-      this.displayRect.width + 2,
-      this.displayRect.height + 2
+      this.displayRect.x,
+      this.displayRect.y,
+      this.displayRect.width,
+      this.displayRect.height
     );
+  }
+
+  private drawLetterboxBackground(): void {
+    const w = this.screenCanvas.width;
+    const h = this.screenCanvas.height;
+
+    // Base rich dark mahogany wood
+    this.screenCtx.fillStyle = '#1c1008';
+    this.screenCtx.fillRect(0, 0, w, h);
+
+    // Subtle horizontal wood planks pattern
+    const plankH = 32;
+    for (let y = 0; y < h; y += plankH) {
+      if (Math.floor(y / plankH) % 2 === 0) {
+        this.screenCtx.fillStyle = '#26160c';
+        this.screenCtx.fillRect(0, y, w, plankH);
+      }
+      this.screenCtx.fillStyle = '#120a05';
+      this.screenCtx.fillRect(0, y, w, 2);
+    }
+
+    // Shadow around game rect
+    if (this.displayRect.x > 0 || this.displayRect.y > 0) {
+      this.screenCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      // Top bar
+      if (this.displayRect.y > 0) {
+        this.screenCtx.fillRect(0, 0, w, this.displayRect.y);
+      }
+      // Bottom bar
+      const bottomY = this.displayRect.y + this.displayRect.height;
+      if (bottomY < h) {
+        this.screenCtx.fillRect(0, bottomY, w, h - bottomY);
+      }
+      // Left bar
+      if (this.displayRect.x > 0) {
+        this.screenCtx.fillRect(0, this.displayRect.y, this.displayRect.x, this.displayRect.height);
+      }
+      // Right bar
+      const rightX = this.displayRect.x + this.displayRect.width;
+      if (rightX < w) {
+        this.screenCtx.fillRect(rightX, this.displayRect.y, w - rightX, this.displayRect.height);
+      }
+    }
   }
 
   // --- Fast pixel art primitives on offscreen buffer ---

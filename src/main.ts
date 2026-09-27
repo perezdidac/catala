@@ -133,7 +133,34 @@ class App {
   }
 }
 
-// Boot application when DOM is ready
-window.addEventListener('DOMContentLoaded', () => {
-  new App();
-});
+// Boot application reliably whether DOM is loading or already interactive/complete
+function bootApp(): void {
+  try {
+    if ((window as any).__WORD_CONDUCTOR_BOOTED__) return;
+    (window as any).__WORD_CONDUCTOR_BOOTED__ = true;
+    console.log('[WordConductor] Booting El Conductor de Paraules...');
+    new App();
+  } catch (err) {
+    console.error('[WordConductor] Fatal error bootstrapping game:', err);
+    const container = document.getElementById('canvas-container');
+    if (container) {
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#f8fafc; font-family:'Fredoka', sans-serif; text-align:center; padding:20px;">
+          <div style="font-size:3rem; margin-bottom:12px;">🚂</div>
+          <h2 style="color:#f59e0b; font-size:1.5rem; margin-bottom:8px;">El Conductor de Paraules</h2>
+          <p style="margin-bottom:16px; color:#cbd5e1; max-width:400px; line-height:1.4;">S'ha produït un petit problema en carregar el joc. Fes clic al botó per tornar-ho a provar.</p>
+          <button onclick="window.location.reload()" style="background:#16a34a; border:2px solid #4ade80; color:white; font-size:1.1rem; font-weight:bold; padding:12px 24px; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+            🔄 Torna a carregar
+          </button>
+        </div>
+      `;
+    }
+  }
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', bootApp);
+} else {
+  // DOM is already ready
+  bootApp();
+}

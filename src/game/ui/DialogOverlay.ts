@@ -113,8 +113,8 @@ export class DialogOverlay {
   public render(ctx: CanvasRenderingContext2D, time: number): void {
     if (!this.activeDialog) return;
 
-    // Dark backdrop overlay
-    ctx.fillStyle = 'rgba(10, 15, 29, 0.78)';
+    // Semi-transparent backdrop overlay - keep vibrant scene visible beneath
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
     ctx.fillRect(0, 0, 640, 360);
 
     const { boxX, boxY, boxW, boxH } = this;
@@ -438,12 +438,19 @@ export class DialogOverlay {
       }
     }
 
-    // Click anywhere on dialog box absorbs the event
+    // Click anywhere inside dialog box absorbs the event
     if (vx >= this.boxX && vx <= this.boxX + this.boxW && vy >= this.boxY && vy <= this.boxY + this.boxH) {
       return true;
     }
 
-    return true; // absorb click while modal dialog is open
+    // For standard dialogues, tapping anywhere on the backdrop also dismisses it smoothly
+    if (!this.activeDialog.isVoiceGate) {
+      soundFX.playClick();
+      this.hide();
+      return true;
+    }
+
+    return true; // absorb click while modal voice gate is open
   }
 }
 

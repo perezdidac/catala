@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node -e \"require('fs').copyFileSync('dist/index.html', 'El_Conductor_de_Paraules.html'); require('fs').copyFileSync('dist/index.html', 'juga.html'); console.log('Offline standalone files updated: El_Conductor_de_Paraules.html & juga.html');\"",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "devDependencies": {
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
+    "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^1.6.0"
   }
 }

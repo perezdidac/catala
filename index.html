@@ -135,7 +135,10 @@
 
     /* Game Canvas Container */
     #canvas-container {
-      flex: 1;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      height: calc(100vh - 48px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -151,6 +154,11 @@
       max-width: 100%;
       max-height: 100%;
       cursor: crosshair;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
     }
 
     /* Parent Guide Modal */
@@ -271,7 +279,27 @@
     </header>
 
     <main id="canvas-container">
-      <!-- Game canvas injected by CanvasRenderer -->
+      <div id="loading-placeholder" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:#f8fafc; font-family:'Fredoka', sans-serif; text-align:center; padding:20px;">
+        <div style="font-size:3rem; animation: bounce 0.8s infinite alternate ease-in-out;">🚂</div>
+        <p style="color:#f59e0b; font-weight:700; font-size:1.15rem; letter-spacing:0.5px;">Carregant El Conductor de Paraules...</p>
+        <span style="color:#94a3b8; font-size:0.85rem;">Preparant les vies i el xiulet...</span>
+        <div id="file-protocol-tip" style="display:none; margin-top:16px;">
+          <p style="color:#cbd5e1; font-size:0.9rem; margin-bottom:12px;">Has obert el fitxer directament des de la carpeta?</p>
+          <a href="./El_Conductor_de_Paraules.html" style="background:#2563eb; color:white; padding:12px 24px; border-radius:12px; text-decoration:none; font-weight:bold; font-size:1rem; display:inline-block; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+            ▶️ Obre el joc autònom (sense servidor)
+          </a>
+        </div>
+      </div>
+      <script>
+        // If opened directly from Windows Explorer (file:// protocol), automatically forward to standalone bundle
+        if (window.location.protocol === 'file:') {
+          var tip = document.getElementById('file-protocol-tip');
+          if (tip) tip.style.display = 'block';
+          if (!window.location.pathname.includes('El_Conductor_de_Paraules') && !window.location.pathname.includes('/dist/')) {
+            window.location.replace('./El_Conductor_de_Paraules.html');
+          }
+        }
+      </script>
     </main>
   </div>
 
