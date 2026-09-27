@@ -523,6 +523,15 @@ export class CabinScene {
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText("🔙 L'Estació", this.backBtnRect.x + this.backBtnRect.w / 2, this.backBtnRect.y + 19);
+
+    // If destination reached, render replay button
+    if (gameState.get().episodeCompleted) {
+      PixelPrimitives.drawBeveledRect(ctx, 220, 36, 200, 30, '#15803d', '#4ade80', '#052e16', 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🔁 Viatja una altra vegada!', 320, 55);
+    }
   }
 
   public handlePointerMove(vx: number, vy: number): boolean {
@@ -577,34 +586,31 @@ export class CabinScene {
       vy >= fireboxRect.y &&
       vy <= fireboxRect.y + fireboxRect.h
     ) {
-      const state = gameState.get();
+      if (gameState.hasItem('branques') || gameState.get().selectedItemId === 'branques') {
+        this.isFireboxOpen = true;
+        soundFX.playShovel();
+        gameState.removeItem('branques');
+        gameState.updateFlags({
+          branchesInFirebox: true,
+          steamPressure: 100
+        });
+        dialogOverlay.show({
+          title: DIALOGUES.fireFed.title,
+          text: DIALOGUES.fireFed.text,
+          voiceText: DIALOGUES.fireFed.voiceText,
+          avatar: 'driver'
+        });
+        return true;
+      }
 
       if (!this.isFireboxOpen) {
-        // Open the door!
         this.isFireboxOpen = true;
         soundFX.playClick();
-        speechManager.speak("La porta del foc és oberta! Pots posar-hi llenya.");
+        speechManager.speak("La porta del foc és oberta! El foc crema fort.");
       } else {
-        // If holding or has branches in inventory, feed the fire!
-        if (state.selectedItemId === 'branques' || gameState.hasItem('branques')) {
-          soundFX.playShovel();
-          gameState.removeItem('branques');
-          gameState.updateFlags({
-            branchesInFirebox: true,
-            steamPressure: 100
-          });
-          dialogOverlay.show({
-            title: DIALOGUES.fireFed.title,
-            text: DIALOGUES.fireFed.text,
-            voiceText: DIALOGUES.fireFed.voiceText,
-            avatar: 'driver'
-          });
-        } else {
-          // Close door
-          this.isFireboxOpen = false;
-          soundFX.playClick();
-          speechManager.speak("Tanquem la caldera per mantenir la calor.");
-        }
+        this.isFireboxOpen = false;
+        soundFX.playClick();
+        speechManager.speak("Tanquem la caldera per mantenir la calor.");
       }
       return true;
     }

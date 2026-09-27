@@ -138,6 +138,25 @@ export class InventoryBar {
         const item = inventory[i];
         if (item) {
           soundFX.playClick();
+          const state = gameState.get();
+
+          // If in cabin and clicking branches, feed the firebox!
+          if (state.currentScene === 'cabin' && item.id === 'branques') {
+            soundFX.playShovel();
+            gameState.removeItem('branques');
+            gameState.updateFlags({
+              branchesInFirebox: true,
+              steamPressure: 100
+            });
+            dialogOverlay.show({
+              title: 'Llenya al foc!',
+              text: 'Has posat les branques a la caldera! El foc crema amb molta força!',
+              voiceText: 'Molt bé! Has posat les branques a la caldera. El foc crema fort i la pressió puja!',
+              avatar: 'driver'
+            });
+            return true;
+          }
+
           gameState.selectItem(item.id);
           // Pronounce item in Catalan
           speechManager.speak(item.speechPhrase);
