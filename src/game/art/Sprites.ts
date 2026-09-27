@@ -864,11 +864,12 @@ export class Sprites {
         PixelPrimitives.drawPixelCircle(ctx, cx - 4, cy + 2, 5, Sprites.COLORS.pineGreenDark, true);
         break;
 
+      case 'clau_anglesa':
       case 'clau':
         // Track wrench / spanner
         ctx.fillStyle = '#94a3b8';
-        PixelPrimitives.drawLine(ctx, cx - 8, cy + 8, cx + 8, cy - 8, '#cbd5e1', 3);
-        PixelPrimitives.drawPixelCircle(ctx, cx + 8, cy - 8, 4, '#94a3b8', false);
+        PixelPrimitives.drawLine(ctx, cx - 8, cy + 8, cx + 8, cy - 8, '#cbd5e1', 4);
+        PixelPrimitives.drawPixelCircle(ctx, cx + 8, cy - 8, 5, '#94a3b8', false);
         break;
 
       case 'bitllet':
@@ -877,6 +878,15 @@ export class Sprites {
         ctx.fillStyle = '#854d0e';
         ctx.fillRect(cx - 7, cy - 2, 14, 2);
         ctx.fillRect(cx - 7, cy + 2, 8, 2);
+        break;
+
+      case 'medalla':
+        // Gold Conductor Medal
+        PixelPrimitives.drawPixelCircle(ctx, cx, cy + 2, 8, '#f59e0b', true);
+        PixelPrimitives.drawPixelCircle(ctx, cx, cy + 2, 6, '#fef08a', true);
+        // Red ribbon
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(cx - 4, cy - 8, 8, 5);
         break;
 
       case 'pala':
@@ -892,4 +902,397 @@ export class Sprites {
         break;
     }
   }
+
+  /**
+   * Scene 3: Stone Viaduct Bridge over the Golden River
+   */
+  public static drawViaductBridge(ctx: CanvasRenderingContext2D, time: number): void {
+    // Sparkling river water below
+    const riverGrad = ctx.createLinearGradient(0, 220, 0, 310);
+    riverGrad.addColorStop(0, '#0284c7');
+    riverGrad.addColorStop(0.5, '#0ea5e9');
+    riverGrad.addColorStop(1, '#38bdf8');
+    ctx.fillStyle = riverGrad;
+    ctx.fillRect(0, 220, 640, 90);
+
+    // River ripples & water reflections
+    for (let r = 0; r < 14; r++) {
+      const rx = (r * 48 + time * 20) % 660 - 20;
+      const ry = 230 + (r % 5) * 14;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillRect(rx, ry, 24, 2);
+    }
+
+    // River bank pebbles
+    ctx.fillStyle = '#78716c';
+    for (let p = 0; p < 640; p += 18) {
+      PixelPrimitives.drawPixelCircle(ctx, p + (p % 7), 298 + (p % 5), 4, '#57534e', true);
+    }
+
+    // Romanesque Stone Viaduct Arches
+    const archCount = 4;
+    const archW = 140;
+    const archH = 75;
+    const viaductY = 220;
+
+    for (let a = 0; a < archCount; a++) {
+      const ax = a * archW + 40;
+
+      // Stone pillars
+      PixelPrimitives.drawBeveledRect(ctx, ax - 16, viaductY - 30, 24, 90, '#d6d3d1', '#f5f5f4', '#78716c', 2);
+
+      // Arch curve cutout
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.arc(ax + archW / 2 - 4, viaductY + 15, 42, Math.PI, 0);
+      ctx.fill();
+
+      // Stone arch rings
+      ctx.strokeStyle = '#a8a29e';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(ax + archW / 2 - 4, viaductY + 15, 44, Math.PI, 0);
+      ctx.stroke();
+    }
+  }
+
+  /**
+   * Scene 3: Water Crane (Grua d'aigua) for filling locomotive boiler
+   */
+  public static drawWaterCrane(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    isRunning: boolean,
+    time: number
+  ): void {
+    // Water tank tower in background
+    PixelPrimitives.drawBeveledRect(ctx, x - 35, y - 90, 45, 70, '#78350f', '#92400e', '#451a03', 2);
+    // Tank roof
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(x - 38, y - 96, 51, 8);
+
+    // Crane vertical iron post
+    PixelPrimitives.drawBeveledRect(ctx, x + 15, y - 75, 10, 75, '#1e293b', '#475569', '#0f172a', 1);
+
+    // Swivel horizontal crane arm
+    PixelPrimitives.drawBeveledRect(ctx, x - 5, y - 75, 48, 8, '#1e293b', '#475569', '#0f172a', 1);
+
+    // Turn valve wheel
+    PixelPrimitives.drawPixelCircle(ctx, x + 20, y - 35, 7, '#f59e0b', true);
+    PixelPrimitives.drawPixelCircle(ctx, x + 20, y - 35, 4, '#1e293b', true);
+
+    // Downward hose nozzle
+    const nozzleX = x + 38;
+    const nozzleY = y - 67;
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(nozzleX, nozzleY, 6, 26);
+
+    // Water flowing if valve opened
+    if (isRunning) {
+      const waterFlowY = nozzleY + 26;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+      ctx.fillRect(nozzleX + 1, waterFlowY, 4, 30);
+
+      // Splash particles
+      for (let s = 0; s < 4; s++) {
+        const sx = nozzleX + 3 + Math.sin(time * 15 + s) * 8;
+        const sy = waterFlowY + 28 - Math.abs(Math.sin(time * 20 + s)) * 6;
+        PixelPrimitives.drawPixelCircle(ctx, sx, sy, 2, '#bae6fd', true);
+      }
+    }
+  }
+
+  /**
+   * Scene 3: La Llúdriga Neus (River Otter)
+   */
+  public static drawOtter(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    time: number,
+    hasWrench: boolean
+  ): void {
+    const bob = Math.sin(time * 3) * 2;
+    const oy = y + bob;
+
+    // Water ripples around otter
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(x, oy + 8, 16, 5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Fur body
+    PixelPrimitives.drawPixelCircle(ctx, x, oy, 11, '#57341e', true);
+    PixelPrimitives.drawPixelCircle(ctx, x, oy + 2, 8, '#854d0e', true);
+
+    // Snout & Whiskers
+    PixelPrimitives.drawPixelCircle(ctx, x, oy - 2, 5, '#fed7aa', true);
+    PixelPrimitives.drawPixelCircle(ctx, x, oy - 4, 2, '#0f172a', true); // nose
+
+    // Cute ears
+    PixelPrimitives.drawPixelCircle(ctx, x - 8, oy - 9, 3, '#57341e', true);
+    PixelPrimitives.drawPixelCircle(ctx, x + 8, oy - 9, 3, '#57341e', true);
+
+    // Eyes
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x - 5, oy - 6, 2, 2);
+    ctx.fillRect(x + 3, oy - 6, 2, 2);
+
+    // Holding the shiny brass wrench in paws!
+    if (hasWrench) {
+      const wx = x + 12;
+      const wy = oy - 2;
+      PixelPrimitives.drawLine(ctx, wx - 4, wy + 4, wx + 6, wy - 6, '#cbd5e1', 3);
+      PixelPrimitives.drawPixelCircle(ctx, wx + 6, wy - 6, 4, '#94a3b8', false);
+      // Sparkle
+      if ((time * 3) % 2 > 1) {
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(wx + 8, wy - 8, 2, 2);
+      }
+    }
+  }
+
+  /**
+   * Scene 4: Medieval Hilltop Castle ("El Castell de la Roca")
+   */
+  public static drawCastle(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    // Castle rocky mountain mount
+    ctx.fillStyle = '#57534e';
+    ctx.beginPath();
+    ctx.moveTo(x - 60, y + 50);
+    ctx.lineTo(x + 10, y - 30);
+    ctx.lineTo(x + 80, y + 50);
+    ctx.fill();
+
+    // Central Stone Keep Tower
+    PixelPrimitives.drawBeveledRect(ctx, x, y - 55, 34, 45, '#a8a29e', '#e7e5e4', '#57534e', 2);
+
+    // Battlements / Crenellations
+    for (let c = 0; c < 4; c++) {
+      ctx.fillStyle = '#e7e5e4';
+      ctx.fillRect(x + c * 9, y - 61, 6, 6);
+    }
+
+    // Arched Castle Window
+    ctx.fillStyle = '#1c1917';
+    ctx.fillRect(x + 12, y - 40, 8, 12);
+    PixelPrimitives.drawPixelCircle(ctx, x + 16, y - 40, 4, '#1c1917', true);
+
+    // Catalan Senyera Flag fluttering in the breeze
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(x + 28, y - 75, 2, 20); // pole
+
+    // 4 red stripes on golden background
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(x + 30, y - 75, 16, 10);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(x + 30, y - 73, 16, 2);
+    ctx.fillRect(x + 30, y - 69, 16, 2);
+  }
+
+  /**
+   * Scene 4: Revisora Montserrat (Conductor & Ticket Inspector)
+   */
+  public static drawInspector(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    time: number,
+    isSpeaking: boolean
+  ): void {
+    const by = y - 46;
+
+    // Green Railway Coat
+    PixelPrimitives.drawBeveledRect(ctx, x + 3, by + 16, 18, 18, '#15803d', '#4ade80', '#052e16', 1);
+
+    // Gold buttons
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(x + 11, by + 20, 2, 2);
+    ctx.fillRect(x + 11, by + 25, 2, 2);
+
+    // Head & Hair
+    ctx.fillStyle = Sprites.COLORS.skinPeach;
+    ctx.fillRect(x + 6, by + 4, 12, 12);
+    ctx.fillStyle = '#78350f'; // brown hair bun
+    ctx.fillRect(x + 4, by + 3, 16, 4);
+
+    // Inspector Green Cap
+    ctx.fillStyle = '#15803d';
+    ctx.fillRect(x + 5, by, 14, 4);
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(x + 5, by + 3, 14, 1);
+
+    // Eyes & Smile
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 8, by + 7, 2, 2);
+    ctx.fillRect(x + 13, by + 7, 2, 2);
+
+    if (isSpeaking) {
+      const open = Math.sin(time * 12) > 0;
+      ctx.fillStyle = open ? '#7f1d1d' : Sprites.COLORS.skinShadow;
+      ctx.fillRect(x + 10, by + 11, open ? 4 : 3, open ? 3 : 1);
+    }
+
+    // Ticket puncher in hand
+    const hx = x + 22;
+    const hy = by + 22;
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(hx, hy, 6, 8);
+  }
+
+  /**
+   * Scene 4: Station Departure Bell (Campana de Bronze)
+   */
+  public static drawStationBell(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    isRinging: boolean,
+    time: number
+  ): void {
+    const swing = isRinging ? Math.sin(time * 20) * 0.35 : 0;
+
+    // Bracket on post
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(x - 2, y - 20, 4, 20);
+    ctx.fillRect(x - 8, y - 20, 16, 3);
+
+    // Bell body (pivots with swing)
+    ctx.save();
+    ctx.translate(x, y - 16);
+    ctx.rotate(swing);
+
+    PixelPrimitives.drawPixelCircle(ctx, 0, 8, 9, Sprites.COLORS.brassGold, true);
+    ctx.fillStyle = Sprites.COLORS.goldHighlight;
+    ctx.fillRect(-7, 8, 14, 4);
+
+    // Clapper inside bell
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(-1, 10, 2, 6);
+    PixelPrimitives.drawPixelCircle(ctx, 0, 16, 2, '#451a03', true);
+
+    // Pull cord
+    PixelPrimitives.drawLine(ctx, 4, 12, 10, 32, '#fef08a', 1);
+
+    ctx.restore();
+
+    // Sound waves when ringing
+    if (isRinging) {
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, 18, -Math.PI * 0.4, Math.PI * 0.4);
+      ctx.stroke();
+    }
+  }
+
+  /**
+   * Scene 5: Mediterranean Coastal Terminal View
+   */
+  public static drawSeasideView(ctx: CanvasRenderingContext2D, time: number): void {
+    // Azure Sea
+    const seaGrad = ctx.createLinearGradient(0, 140, 0, 240);
+    seaGrad.addColorStop(0, '#0284c7');
+    seaGrad.addColorStop(0.6, '#0369a1');
+    seaGrad.addColorStop(1, '#075985');
+    ctx.fillStyle = seaGrad;
+    ctx.fillRect(0, 140, 640, 100);
+
+    // Shimmering sea waves
+    for (let w = 0; w < 10; w++) {
+      const wx = (w * 70 + time * 15) % 680 - 40;
+      const wy = 155 + (w % 4) * 16;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.fillRect(wx, wy, 35, 2);
+    }
+
+    // Sandy Costa Brava Cove Beach
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.moveTo(0, 215);
+    ctx.bezierCurveTo(200, 205, 450, 230, 640, 210);
+    ctx.lineTo(640, 260);
+    ctx.lineTo(0, 260);
+    ctx.fill();
+
+    // Red and White Striped Lighthouse (El Far)
+    const farX = 530;
+    const farY = 135;
+    PixelPrimitives.drawBeveledRect(ctx, farX, farY - 50, 20, 50, '#ffffff', '#f8fafc', '#cbd5e1', 1);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(farX, farY - 40, 20, 10);
+    ctx.fillRect(farX, farY - 20, 20, 10);
+
+    // Lighthouse lantern room & rotating beam
+    PixelPrimitives.drawPixelCircle(ctx, farX + 10, farY - 54, 7, '#facc15', true);
+    const beamAngle = time * 2;
+    const beamX = farX + 10 + Math.cos(beamAngle) * 60;
+    const beamY = farY - 54 + Math.sin(beamAngle) * 20;
+    ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
+    ctx.beginPath();
+    ctx.moveTo(farX + 10, farY - 54);
+    ctx.lineTo(beamX, beamY - 12);
+    ctx.lineTo(beamX, beamY + 12);
+    ctx.fill();
+
+    // White seagulls soaring
+    for (let g = 0; g < 3; g++) {
+      const gx = ((time * 25 + g * 120) % 600) + 20;
+      const gy = 60 + Math.sin(time * 3 + g) * 8;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(gx - 4, gy, 4, Math.PI, 0);
+      ctx.arc(gx + 4, gy, 4, Math.PI, 0);
+      ctx.stroke();
+    }
+  }
+
+  /**
+   * Scene 5: Alcaldessa Eulàlia (Mayor of the Green Valley)
+   */
+  public static drawMayor(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    time: number,
+    isSpeaking: boolean
+  ): void {
+    const by = y - 48;
+
+    // Elegant Catalan Mayor Attire
+    PixelPrimitives.drawBeveledRect(ctx, x + 3, by + 16, 18, 18, '#4338ca', '#818cf8', '#1e1b4b', 1);
+
+    // Catalan Red/Yellow Mayor Sash across chest
+    PixelPrimitives.drawLine(ctx, x + 4, by + 16, x + 18, by + 32, '#dc2626', 3);
+    PixelPrimitives.drawLine(ctx, x + 4, by + 17, x + 18, by + 33, '#facc15', 1);
+
+    // Head
+    ctx.fillStyle = Sprites.COLORS.skinPeach;
+    ctx.fillRect(x + 6, by + 4, 12, 12);
+
+    // Silver hair
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(x + 4, by + 2, 16, 4);
+
+    // Eyes
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 8, by + 7, 2, 2);
+    ctx.fillRect(x + 13, by + 7, 2, 2);
+
+    if (isSpeaking) {
+      const open = Math.sin(time * 12) > 0;
+      ctx.fillStyle = open ? '#7f1d1d' : Sprites.COLORS.skinShadow;
+      ctx.fillRect(x + 10, by + 11, open ? 4 : 3, open ? 3 : 1);
+    }
+
+    // Holding the Golden Medal of Honor!
+    const mx = x + 24;
+    const my = by + 20;
+    PixelPrimitives.drawPixelCircle(ctx, mx, my, 7, '#f59e0b', true);
+    PixelPrimitives.drawPixelCircle(ctx, mx, my, 5, '#fef08a', true);
+  }
 }
+

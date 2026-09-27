@@ -74,6 +74,28 @@ class App {
       });
     }
 
+    // Modern Pixel Art Gallery Modal
+    const artGalleryBtn = document.getElementById('btn-art-gallery');
+    const galleryModal = document.getElementById('gallery-modal');
+    const closeGalleryModal = document.getElementById('close-gallery-modal');
+
+    if (artGalleryBtn && galleryModal && closeGalleryModal) {
+      artGalleryBtn.addEventListener('click', () => {
+        soundFX.init();
+        soundFX.playClick();
+        galleryModal.classList.remove('hidden');
+      });
+      closeGalleryModal.addEventListener('click', () => {
+        soundFX.playClick();
+        galleryModal.classList.add('hidden');
+      });
+      galleryModal.addEventListener('click', (e) => {
+        if (e.target === galleryModal) {
+          galleryModal.classList.add('hidden');
+        }
+      });
+    }
+
     // Reset Game button
     const resetBtn = document.getElementById('btn-reset');
     if (resetBtn) {

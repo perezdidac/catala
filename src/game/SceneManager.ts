@@ -1,24 +1,41 @@
 /**
- * SceneManager: Handles scene switching, updates, rendering, and event routing
+ * SceneManager: Handles scene switching, updates, rendering, and event routing for all 5 scenes
  */
 
 import { SceneId, gameState } from './GameState';
 import { StationScene } from './scenes/StationScene';
 import { CabinScene } from './scenes/CabinScene';
+import { BridgeScene } from './scenes/BridgeScene';
+import { CastleScene } from './scenes/CastleScene';
+import { SeasideScene } from './scenes/SeasideScene';
 import { VerbBar } from './ui/VerbBar';
 import { InventoryBar } from './ui/InventoryBar';
 import { dialogOverlay } from './ui/DialogOverlay';
 
+export interface IScene {
+  enter: () => void;
+  update: (dt: number) => void;
+  render: (ctx: CanvasRenderingContext2D) => void;
+  handlePointerMove: (vx: number, vy: number) => boolean;
+  handlePointerDown: (vx: number, vy: number) => boolean;
+  handlePointerUp?: () => void;
+}
+
 export class SceneManager {
-  private stationScene: StationScene;
-  private cabinScene: CabinScene;
+  private scenes: Record<SceneId, IScene>;
   private verbBar: VerbBar;
   private inventoryBar: InventoryBar;
   private currentSceneId: SceneId = 'station';
 
   constructor() {
-    this.stationScene = new StationScene();
-    this.cabinScene = new CabinScene();
+    this.scenes = {
+      station: new StationScene(),
+      cabin: new CabinScene(),
+      bridge: new BridgeScene(),
+      castle: new CastleScene(),
+      seaside: new SeasideScene()
+    };
+
     this.verbBar = new VerbBar();
     this.inventoryBar = new InventoryBar();
 
@@ -30,11 +47,11 @@ export class SceneManager {
       }
     });
 
-    this.stationScene.enter();
+    this.getActiveScene().enter();
   }
 
-  public getActiveScene(): StationScene | CabinScene {
-    return this.currentSceneId === 'station' ? this.stationScene : this.cabinScene;
+  public getActiveScene(): IScene {
+    return this.scenes[this.currentSceneId] || this.scenes.station;
   }
 
   public update(dt: number): void {
@@ -42,15 +59,16 @@ export class SceneManager {
   }
 
   public render(ctx: CanvasRenderingContext2D, time: number): void {
-    // 1. Render active game scene (Station or Cabin)
+    // 1. Render active game scene
     this.getActiveScene().render(ctx);
 
-    // 2. Render bottom UI bar only in Station scene, or when relevant
-    if (this.currentSceneId === 'station') {
-      this.verbBar.render(ctx, time);
+    // 2. Render UI bars
+    if (this.currentSceneId === 'cabin') {
+      // In Cabin view, render inventory shelf so child can use fuel items
       this.inventoryBar.render(ctx, time);
     } else {
-      // In Cabin scene, show inventory bar so child can feed wood to firebox
+      // In story stations, render both VerbBar and InventoryBar
+      this.verbBar.render(ctx, time);
       this.inventoryBar.render(ctx, time);
     }
 
@@ -66,7 +84,7 @@ export class SceneManager {
     }
 
     // Check UI first
-    if (this.currentSceneId === 'station') {
+    if (this.currentSceneId !== 'cabin') {
       if (this.verbBar.handlePointerMove(vx, vy)) return;
       if (this.inventoryBar.handlePointerMove(vx, vy)) return;
     } else {
@@ -85,7 +103,7 @@ export class SceneManager {
     }
 
     // Check UI bars
-    if (this.currentSceneId === 'station') {
+    if (this.currentSceneId !== 'cabin') {
       if (this.verbBar.handlePointerDown(vx, vy)) return;
       if (this.inventoryBar.handlePointerDown(vx, vy)) return;
     } else {
@@ -97,8 +115,9 @@ export class SceneManager {
   }
 
   public handlePointerUp(): void {
-    if (this.currentSceneId === 'cabin') {
-      this.cabinScene.handlePointerUp();
+    const scene = this.getActiveScene();
+    if (scene.handlePointerUp) {
+      scene.handlePointerUp();
     }
   }
 }

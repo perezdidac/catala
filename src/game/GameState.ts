@@ -1,9 +1,10 @@
 /**
- * GameState: Reactive state store for puzzles, inventory, and scene transitions
+ * GameState: Reactive state store for puzzles, inventory, and multi-scene transitions
+ * Supports 5 interconnected chapters across the Catalan railway journey.
  */
 
 export type ActionVerb = 'MIRA' | 'AGAFA' | 'PARLA' | 'CONDUEIX';
-export type SceneId = 'station' | 'cabin';
+export type SceneId = 'station' | 'cabin' | 'bridge' | 'castle' | 'seaside';
 
 export interface InventoryItem {
   id: string;
@@ -19,15 +20,16 @@ export interface GameStateData {
   activeVerb: ActionVerb;
   inventory: InventoryItem[];
   selectedItemId: string | null;
+  unlockedScenes: SceneId[];
 
-  // Station Scene Puzzle Flags
+  // Scene 1: L'Estació dels Pins
   switchInspected: boolean;
   branchesTaken: boolean;
   stationmasterSpoken: boolean;
   voiceGatePassed: boolean;
   switchOpen: boolean;
 
-  // Cabin Scene Simulation State
+  // Scene 2: La Cabina del Maquinista
   branchesInFirebox: boolean;
   coalShoveled: number;
   steamPressure: number; // 0 to 100%
@@ -35,7 +37,29 @@ export interface GameStateData {
   speedKmh: number;      // calculated from throttle and steam
   whistlePulled: boolean;
   distanceTraveled: number; // 0 to 1000m
+  cabinCompleted: boolean;
   episodeCompleted: boolean;
+
+  // Scene 3: El Pont del Riu d'Or
+  waterCraneInspected: boolean;
+  otterSpoken: boolean;
+  waterVoiceGatePassed: boolean;
+  wrenchCollected: boolean;
+  waterCraneOperated: boolean;
+  waterTankFilled: boolean;
+
+  // Scene 4: El Castell de la Roca
+  ticketInspected: boolean;
+  inspectorSpoken: boolean;
+  allAboardVoiceGatePassed: boolean;
+  bellRung: boolean;
+  tunnelCrossed: boolean;
+
+  // Scene 5: La Vall Verda i el Mar
+  mayorSpoken: boolean;
+  celebrationVoiceGatePassed: boolean;
+  medalAwarded: boolean;
+  grandCelebration: boolean;
 }
 
 export type StateListener = (state: GameStateData) => void;
@@ -48,27 +72,52 @@ export class GameState {
     this.state = this.getInitialState();
   }
 
-  private getInitialState(): GameStateData {
+  public getInitialState(): GameStateData {
     return {
       currentScene: 'station',
       activeVerb: 'MIRA',
       inventory: [],
       selectedItemId: null,
+      unlockedScenes: ['station'],
 
+      // Scene 1
       switchInspected: false,
       branchesTaken: false,
       stationmasterSpoken: false,
       voiceGatePassed: false,
       switchOpen: false,
 
+      // Scene 2
       branchesInFirebox: false,
       coalShoveled: 0,
-      steamPressure: 50, // default warm boiler
+      steamPressure: 50,
       throttle: 0,
       speedKmh: 0,
       whistlePulled: false,
       distanceTraveled: 0,
-      episodeCompleted: false
+      cabinCompleted: false,
+      episodeCompleted: false,
+
+      // Scene 3
+      waterCraneInspected: false,
+      otterSpoken: false,
+      waterVoiceGatePassed: false,
+      wrenchCollected: false,
+      waterCraneOperated: false,
+      waterTankFilled: false,
+
+      // Scene 4
+      ticketInspected: false,
+      inspectorSpoken: false,
+      allAboardVoiceGatePassed: false,
+      bellRung: false,
+      tunnelCrossed: false,
+
+      // Scene 5
+      mayorSpoken: false,
+      celebrationVoiceGatePassed: false,
+      medalAwarded: false,
+      grandCelebration: false
     };
   }
 
@@ -91,7 +140,7 @@ export class GameState {
   public setVerb(verb: ActionVerb): void {
     if (this.state.activeVerb !== verb) {
       this.state.activeVerb = verb;
-      this.state.selectedItemId = null; // deselect item when switching verb
+      this.state.selectedItemId = null;
       this.notify();
     }
   }
@@ -99,6 +148,9 @@ export class GameState {
   public setScene(scene: SceneId): void {
     if (this.state.currentScene !== scene) {
       this.state.currentScene = scene;
+      if (!this.state.unlockedScenes.includes(scene)) {
+        this.state.unlockedScenes = [...this.state.unlockedScenes, scene];
+      }
       this.notify();
     }
   }

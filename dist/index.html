@@ -241,7 +241,7 @@
       to { opacity: 1; }
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-BMd14x8C.js"></script>
+  <script type="module" crossorigin src="/assets/index-Bk5uS5KB.js"></script>
 </head>
 <body>
   <div id="app">
@@ -253,6 +253,9 @@
       </div>
 
       <div class="controls-group">
+        <button id="btn-art-gallery" class="btn-action" title="Àlbum d'Il·lustracions Modernes">
+          🖼️ Galeria
+        </button>
         <button id="btn-parent-guide" class="btn-action btn-parent" title="Guia per a mares i pares">
           👨‍👩‍👧 Guia per a Pares
         </button>
@@ -300,6 +303,116 @@
       </div>
     </div>
   </div>
+
+  <!-- Modern Pixel Art Gallery Modal -->
+  <div id="gallery-modal" class="modal hidden">
+    <div class="modal-content gallery-modal-content">
+      <div class="modal-header">
+        <h2>🖼️ Àlbum d'Il·lustracions Modern Pixel Art</h2>
+        <button id="close-gallery-modal" class="modal-close">✕</button>
+      </div>
+
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">
+        Il·lustracions d'alta definició inspirades en l'estil pixel art modern (Eastward / Sea of Stars) ambientades a Catalunya.
+      </p>
+
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <img src="/assets/art/scene_estacio_pins.jpg" alt="L'Estació dels Pins" loading="lazy" />
+          <div class="card-caption">
+            <strong>1. L'Estació dels Pins</strong>
+            <span>La muntanya de Montserrat, el tren El Drac i en Pep</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/assets/art/scene_cabina_tren.jpg" alt="La Cabina del Maquinista" loading="lazy" />
+          <div class="card-caption">
+            <strong>2. La Cabina del Maquinista</strong>
+            <span>La caldera de foc, els manòmetres i els gira-sols</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/assets/art/scene_pont_viaducte.jpg" alt="El Pont del Riu d'Or" loading="lazy" />
+          <div class="card-caption">
+            <strong>3. El Pont del Riu d'Or</strong>
+            <span>El viaducte, la grua d'aigua i la llúdriga Neus</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/assets/art/scene_mar_costa.jpg" alt="La Vall Verda i el Mar" loading="lazy" />
+          <div class="card-caption">
+            <strong>4. La Vall Verda i el Mar</strong>
+            <span>El mar Mediterrani, la platja i el far de la costa</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/assets/art/items_characters_badges.jpg" alt="La Col·lecció del Maquinista" loading="lazy" />
+          <div class="card-caption">
+            <strong>5. La Col·lecció del Maquinista</strong>
+            <span>El bitllet daurat, la clau anglesa i la Medalla d'Or</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .gallery-modal-content {
+      max-width: 900px !important;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .gallery-card {
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--brass-gold);
+    }
+
+    .gallery-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 2px solid #1e293b;
+    }
+
+    .card-caption {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-caption strong {
+      color: var(--brass-light);
+      font-size: 0.95rem;
+    }
+
+    .card-caption span {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      line-height: 1.3;
+    }
+  </style>
 
 </body>
 </html>

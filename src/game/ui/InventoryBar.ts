@@ -8,6 +8,7 @@ import { PixelPrimitives } from '../art/PixelPrimitives';
 import { Sprites } from '../art/Sprites';
 import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
+import { dialogOverlay } from './DialogOverlay';
 
 export class InventoryBar {
   private x = 358;

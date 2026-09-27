@@ -1,6 +1,7 @@
 /**
  * Catalan Vocabulary and Speech Database for "El Conductor de Paraules"
  * Specially designed for 5-year-old learners living abroad.
+ * Covers 5 complete playable scenes across the Catalan railway journey.
  */
 
 export interface VocabularyWord {
@@ -154,13 +155,120 @@ export const VOCABULARY_LIST: Record<string, VocabularyWord> = {
     icon: '🐦',
     speechPhrase: "L'ocell canta dalt de l'arbre: Piu, piu, piu!",
     acceptedRecognitionTokens: ['ocell', 'ocellet', 'piu', 'piu piu']
+  },
+
+  // Scene 3: El Pont del Riu d'Or
+  aigua_fresca: {
+    id: 'aigua_fresca',
+    catalan: 'Aigua fresca',
+    syllables: ['ai', 'gua', 'fres', 'ca'],
+    phoneticHint: 'AI-GUA FRES-CA',
+    meaningEn: 'Fresh water',
+    icon: '💧',
+    speechPhrase: "Aigua fresca de muntanya per a la caldera del tren!",
+    acceptedRecognitionTokens: ['aigua fresca', 'aigua', 'aigua de riu', 'fresca', 'aigua si us plau']
+  },
+  clau_anglesa: {
+    id: 'clau_anglesa',
+    catalan: 'La Clau Anglesa',
+    syllables: ['clau', 'an', 'gle', 'sa'],
+    phoneticHint: 'CLAU AN-GLE-SA',
+    meaningEn: 'The Wrench',
+    icon: '🔧',
+    speechPhrase: 'Una clau anglesa per obrir la vàlvula daurada.',
+    acceptedRecognitionTokens: ['clau anglesa', 'clau', 'anglesa', 'la clau']
+  },
+  lludriga: {
+    id: 'lludriga',
+    catalan: 'La Llúdriga Neus',
+    syllables: ['llú', 'dri', 'ga'],
+    phoneticHint: 'LLÚ-DRI-GA',
+    meaningEn: 'The River Otter',
+    icon: '🦦',
+    speechPhrase: 'La llúdriga Neus neda contenta al riu!',
+    acceptedRecognitionTokens: ['lludriga', 'llúdriga', 'neus', 'la llúdriga', 'animal']
+  },
+  pont: {
+    id: 'pont',
+    catalan: 'El Pont',
+    syllables: ['pont'],
+    phoneticHint: 'PONT',
+    meaningEn: 'The Bridge',
+    icon: '🌉',
+    speechPhrase: 'El pont de pedra creua el riu d\'aigua clara.',
+    acceptedRecognitionTokens: ['pont', 'el pont', 'viaducte']
+  },
+
+  // Scene 4: El Castell de la Roca
+  tots_al_tren: {
+    id: 'tots_al_tren',
+    catalan: 'Tots al tren',
+    syllables: ['tots', 'al', 'tren'],
+    phoneticHint: 'TOTS AL TREN',
+    meaningEn: 'All aboard',
+    icon: '📢',
+    speechPhrase: 'Tots al tren! El tren està a punt de sortir!',
+    acceptedRecognitionTokens: ['tots al tren', 'tots al tre', 'tots', 'al tren', 'pujar']
+  },
+  bitllet: {
+    id: 'bitllet',
+    catalan: 'El Bitllet Daurat',
+    syllables: ['bit', 'llet'],
+    phoneticHint: 'BIT-LLET',
+    meaningEn: 'The Golden Ticket',
+    icon: '🎟️',
+    speechPhrase: 'El bitllet de tren per viatjar fins al mar.',
+    acceptedRecognitionTokens: ['bitllet', 'el bitllet', 'tiquet', 'passatge']
+  },
+  campana: {
+    id: 'campana',
+    catalan: 'La Campana',
+    syllables: ['cam', 'pa', 'na'],
+    phoneticHint: 'CAM-PA-NA',
+    meaningEn: 'The Bell',
+    icon: '🔔',
+    speechPhrase: 'Ding-dong! La campana de bronze de l\'estació.',
+    acceptedRecognitionTokens: ['campana', 'la campana', 'ding dong', 'tocar']
+  },
+
+  // Scene 5: La Vall Verda i el Mar
+  visca_el_tren: {
+    id: 'visca_el_tren',
+    catalan: 'Visca el tren',
+    syllables: ['vis', 'ca', 'el', 'tren'],
+    phoneticHint: 'VIS-CA EL TREN',
+    meaningEn: 'Long live the train / Hurray for the train',
+    icon: '🎉',
+    speechPhrase: 'Visca el tren i visca el petit maquinista!',
+    acceptedRecognitionTokens: ['visca el tren', 'visca', 'el tren', 'visca tren', 'visca el maquinista']
+  },
+  mar: {
+    id: 'mar',
+    catalan: 'El Mar',
+    syllables: ['mar'],
+    phoneticHint: 'MAR',
+    meaningEn: 'The Sea',
+    icon: '🌊',
+    speechPhrase: 'El mar blau amb les barquetes de pescadors.',
+    acceptedRecognitionTokens: ['mar', 'el mar', 'aigua']
+  },
+  medalla: {
+    id: 'medalla',
+    catalan: 'La Medalla d\'Or',
+    syllables: ['me', 'da', 'lla'],
+    phoneticHint: 'ME-DA-LLA',
+    meaningEn: 'The Gold Medal',
+    icon: '🏅',
+    speechPhrase: 'La medalla d\'or del millor maquinista de Catalunya!',
+    acceptedRecognitionTokens: ['medalla', 'la medalla', 'or', 'premi']
   }
 };
 
 /**
- * Dialogue scripts for scenes
+ * Dialogue scripts for all 5 scenes
  */
 export const DIALOGUES = {
+  // Scene 1: L'Estació dels Pins
   welcome: {
     title: 'Benvingut a bord!',
     text: "Hola, petit maquinista! Benvingut a l'Estació dels Pins. Ajuda'ns a preparar el tren!",
@@ -196,6 +304,8 @@ export const DIALOGUES = {
     text: "CLAC! El semàfor està verd! La via està lliure. Puja a la cabina amb el botó CONDUEIX!",
     voiceText: "Clac! El semàfor s'ha posat verd! La via està lliure. Puja a la cabina amb el botó CONDUEIX!"
   },
+
+  // Scene 2: La Cabina del Maquinista
   cabinIntro: {
     speaker: 'Maquinista Joan',
     title: 'A la Cabina!',
@@ -221,6 +331,80 @@ export const DIALOGUES = {
     title: 'Felicitats, Maquinista!',
     text: "Visca! Hem arribat a la següent estació! Ets un maquinista fantàstic!",
     voiceText: "Visca el petit maquinista! Hem arribat sans i estalvis a la següent estació! Moltes felicitats!"
+  },
+
+  // Scene 3: El Pont del Riu d'Or
+  bridgeIntro: {
+    speaker: 'Maquinista Joan',
+    title: 'El Pont del Riu d\'Or',
+    text: "Mireu el viaducte de pedra! Però la caldera necessita aigua fresca del riu per continuar.",
+    voiceText: "Mireu quin pont de pedra més bonic! Però la caldera necessita aigua fresca del riu per continuar."
+  },
+  otterAskVoice: {
+    speaker: 'Llúdriga Neus',
+    title: 'L\'Aigua del Riu',
+    text: "Xip-xap! Sóc la Neus! Tinc la clau anglesa per obrir la grua d'aigua. Em pots demanar: 'AIGUA FRESCA'?",
+    voiceText: "Hola petit amic! Tinc la clau anglesa per omplir el tren. Em pots dir ben clar: Aigua fresca?",
+    targetPhrase: 'Aigua fresca',
+    syllables: ['Ai', 'gua', 'fres', 'ca'],
+    targetId: 'aigua_fresca'
+  },
+  otterSuccess: {
+    speaker: 'Llúdriga Neus',
+    title: 'Aigua pura!',
+    text: "Molt bé! Aquí tens la clau anglesa. Obre la vàlvula de la grua per omplir el dipòsit d'aigua!",
+    voiceText: "Molt ben dit! Aquí tens la clau anglesa. Obre la vàlvula per omplir d'aigua la locomotora!"
+  },
+  waterTankFull: {
+    title: 'Dipòsit Ple!',
+    text: "Gorg, gorg! La locomotora té aigua de sobres per generar vapor! Ja podem creuar el gran pont!",
+    voiceText: "Gorg, gorg! El dipòsit d'aigua està ple de gom a gom! Ja podem creuar el gran pont cap al Castell!"
+  },
+
+  // Scene 4: El Castell de la Roca
+  castleIntro: {
+    speaker: 'Revisora Montserrat',
+    title: 'El Castell de la Roca',
+    text: "Benvinguts a l'estació del Castell! Abans d'entrar al túnel de la muntanya, cal fer sonar la campana.",
+    voiceText: "Benvinguts a l'estació del Castell de la Roca! Abans de travessar el túnel, hem de cridar: Tots al tren!"
+  },
+  inspectorAskVoice: {
+    speaker: 'Revisora Montserrat',
+    title: 'El Gran Crida de Sortida',
+    text: "Perquè tothom pugi als vagons i puguem tocar la campana, crida ben fort: 'TOTS AL TREN'!",
+    voiceText: "Perquè tothom pugi als vagons, crida amb mi: Tots al tren!",
+    targetPhrase: 'Tots al tren',
+    syllables: ['Tots', 'al', 'tren'],
+    targetId: 'tots_al_tren'
+  },
+  inspectorSuccess: {
+    speaker: 'Revisora Montserrat',
+    title: 'Tots a bord!',
+    text: "Ding-dong! La campana de bronze ressona per tota la muntanya! Tothom és a bord. Endavant pel túnel!",
+    voiceText: "Ding-dong! La campana ressona per la vall! Tothom és a bord. Endavant pel túnel!"
+  },
+
+  // Scene 5: La Vall Verda i el Mar
+  seasideIntro: {
+    speaker: 'Alcaldessa Eulàlia',
+    title: 'L\'Arribada al Mar!',
+    text: "Mireu el mar blau, les gavines i el far! Hem arribat al final de la línia ferroviària!",
+    voiceText: "Visca! Mireu el mar blau, les gavines i el far! El tren ha arribat a la platja!"
+  },
+  mayorAskVoice: {
+    speaker: 'Alcaldessa Eulàlia',
+    title: 'La Gran Festa del Tren',
+    text: "Per rebre la Medalla d'Or del Gran Maquinista, cridem tots plegats: 'VISCA EL TREN'!",
+    voiceText: "Per celebrar aquesta gran aventura, crida amb nosaltres: Visca el tren!",
+    targetPhrase: 'Visca el tren',
+    syllables: ['Vis', 'ca', 'el', 'tren'],
+    targetId: 'visca_el_tren'
+  },
+  mayorSuccess: {
+    speaker: 'Alcaldessa Eulàlia',
+    title: '🏅 El Gran Maquinista!',
+    text: "Visca! Enhorabona! Has après moltes paraules en català i has portat el tren fins al mar. Ets un autèntic Maquinista d'Honor!",
+    voiceText: "Visca el tren i visca el nostre petit maquinista! Enhorabona, has après un munt de català i has arribat al mar!"
   }
 };
 

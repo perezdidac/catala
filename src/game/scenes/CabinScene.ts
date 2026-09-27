@@ -524,13 +524,21 @@ export class CabinScene {
     ctx.textAlign = 'center';
     ctx.fillText("🔙 L'Estació", this.backBtnRect.x + this.backBtnRect.w / 2, this.backBtnRect.y + 19);
 
-    // If destination reached, render replay button
+    // If destination reached, render next station & replay buttons
     if (gameState.get().episodeCompleted) {
-      PixelPrimitives.drawBeveledRect(ctx, 220, 36, 200, 30, '#15803d', '#4ade80', '#052e16', 2);
+      // Next Station: El Pont del Riu
+      PixelPrimitives.drawBeveledRect(ctx, 130, 36, 160, 30, '#0284c7', '#38bdf8', '#0369a1', 2);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('🔁 Viatja una altra vegada!', 320, 55);
+      ctx.fillText("🌉 El Pont del Riu", 210, 55);
+
+      // Replay button
+      PixelPrimitives.drawBeveledRect(ctx, 300, 36, 160, 30, '#15803d', '#4ade80', '#052e16', 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🔁 Tornar a viatjar', 380, 55);
     }
   }
 
@@ -561,6 +569,25 @@ export class CabinScene {
     ) {
       soundFX.playClick();
       gameState.setScene('station');
+      return true;
+    }
+
+    // Go to next station: El Pont del Riu
+    if (gameState.get().episodeCompleted && vx >= 130 && vx <= 290 && vy >= 36 && vy <= 66) {
+      soundFX.playWhistle();
+      gameState.setScene('bridge');
+      return true;
+    }
+
+    // Replay journey button
+    if (gameState.get().episodeCompleted && vx >= 300 && vx <= 460 && vy >= 36 && vy <= 66) {
+      soundFX.playWhistle();
+      gameState.updateFlags({
+        distanceTraveled: 0,
+        episodeCompleted: false,
+        throttle: 40
+      });
+      speechManager.speak("Endavant un altre cop! Tots al tren!");
       return true;
     }
 
