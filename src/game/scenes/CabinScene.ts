@@ -10,6 +10,7 @@ import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES } from '../../data/catalanVocabulary';
+import { assetManager } from '../../engine/AssetManager';
 
 export class CabinScene {
   private animTime: number = 0;
@@ -118,33 +119,139 @@ export class CabinScene {
   public render(ctx: CanvasRenderingContext2D): void {
     const time = this.animTime;
     const state = gameState.get();
+    const modernBg = assetManager.getImage('cabin');
 
-    // 1. Windshield opening (through which moving scenery is visible)
-    this.renderWindshieldScenery(ctx, time, state.speedKmh);
+    if (modernBg) {
+      // Modern High-Bit Pixel Art Cabin Interior
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(modernBg, 0, 0, 640, 360);
+      ctx.restore();
 
-    // 2. Heavy Cast Iron Cabin Interior Frame & Walls
-    this.renderCabinInterior(ctx, time, state);
+      // Dynamic animated fire inside firebox
+      this.renderModernFirebox(ctx, time, state);
 
-    // 3. Front Window Rim & Rivets
-    this.renderWindowFrame(ctx);
+      // Dynamic whistle cord with spring pull
+      this.renderModernWhistle(ctx, time);
 
-    // 4. Steam Whistle Pull-Cord with spring physics
-    this.renderWhistleCord(ctx);
+      // Dynamic throttle lever & speed indicator
+      this.renderModernControls(ctx, state);
 
-    // 5. Firebox (Open/Closed, roaring fire, wood feeding)
-    this.renderFirebox(ctx, time, state);
+      // Journey Progress Bar at top
+      this.renderProgressBar(ctx, state.distanceTraveled);
 
-    // 6. Throttle Regulator Lever
-    this.renderThrottleLever(ctx, state.throttle);
+      // Back to Station Button
+      this.renderBackButton(ctx);
+    } else {
+      // Procedural fallback
+      this.renderWindshieldScenery(ctx, time, state.speedKmh);
+      this.renderCabinInterior(ctx, time, state);
+      this.renderWindowFrame(ctx);
+      this.renderWhistleCord(ctx);
+      this.renderFirebox(ctx, time, state);
+      this.renderThrottleLever(ctx, state.throttle);
+      this.renderDials(ctx, state.steamPressure, state.speedKmh);
+      this.renderProgressBar(ctx, state.distanceTraveled);
+      this.renderBackButton(ctx);
+    }
+  }
 
-    // 7. Brass Dials (Steam Pressure & Speedometer)
-    this.renderDials(ctx, state.steamPressure, state.speedKmh);
+  private renderModernFirebox(ctx: CanvasRenderingContext2D, time: number, state: any): void {
+    const fx = 535;
+    const fy = 220;
+    const fw = 70;
+    const fh = 55;
 
-    // 8. Journey Progress Bar at top
-    this.renderProgressBar(ctx, state.distanceTraveled);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(fx, fy, fw, fh);
+    ctx.clip();
 
-    // 9. Back to Station Button
-    this.renderBackButton(ctx);
+    // Charcoal bed
+    ctx.fillStyle = '#1c0702';
+    ctx.fillRect(fx, fy + 35, fw, 20);
+
+    // Dancing fire flames
+    const intensity = Math.max(0.4, state.steamPressure / 100);
+    const flameColors = ['#f59e0b', '#ef4444', '#fef08a'];
+    for (let i = 0; i < 6; i++) {
+      const h = 18 + Math.sin(time * 12 + i * 1.5) * 14 * intensity;
+      const x = fx + 6 + i * 10;
+      ctx.fillStyle = flameColors[i % flameColors.length];
+      ctx.beginPath();
+      ctx.moveTo(x - 5, fy + 48);
+      ctx.quadraticCurveTo(x, fy + 48 - h * 1.2, x + 6, fy + 48);
+      ctx.fill();
+    }
+
+    // Sparks when stoked
+    if (state.branchesInFirebox || this.fireboxSparkTime > 0) {
+      for (let s = 0; s < 5; s++) {
+        const sx = fx + 10 + ((time * 40 + s * 14) % (fw - 20));
+        const sy = fy + 40 - ((time * 50 + s * 22) % 35);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(sx, sy, 2, 2);
+      }
+    }
+    ctx.restore();
+  }
+
+  private renderModernWhistle(ctx: CanvasRenderingContext2D, time: number): void {
+    const pullY = this.whistlePull * 20;
+    const cordX = 398;
+
+    // Cord
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cordX, 10);
+    ctx.lineTo(cordX, 120 + pullY);
+    ctx.stroke();
+
+    // Wood pull handle
+    PixelPrimitives.drawBeveledRect(ctx, cordX - 4, 120 + pullY, 9, 28, '#78350f', '#b45309', '#451a03', 1);
+
+    // Whistle steam burst
+    if (this.whistlePull > 0.3) {
+      ctx.save();
+      for (let p = 0; p < 4; p++) {
+        const px = cordX - 10 + Math.sin(time * 15 + p) * 12;
+        const py = 20 - p * 6;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.beginPath();
+        ctx.arc(px, py, 4 + p * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderModernControls(ctx: CanvasRenderingContext2D, state: any): void {
+    // Throttle lever indicator (around x: 295, y: 255)
+    const throttleAngle = -0.5 + (state.throttle / 100) * 1.0;
+    ctx.save();
+    ctx.translate(295, 255);
+    ctx.rotate(throttleAngle);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(-3, -28, 6, 28);
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(0, -28, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Speed indicator pill
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillRect(490, 8, 138, 24);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(490, 8, 138, 24);
+
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`⚡ ${Math.round(state.speedKmh)} km/h`, 559, 24);
   }
 
   private renderWindshieldScenery(ctx: CanvasRenderingContext2D, time: number, speed: number): void {
@@ -544,14 +651,13 @@ export class CabinScene {
 
   public handlePointerMove(vx: number, vy: number): boolean {
     if (this.isWhistleHeld) {
-      const pull = Math.max(0, Math.min(1, (vy - this.whistleRect.y) / 60));
+      const pull = Math.max(0, Math.min(1, (vy - 20) / 80));
       this.whistlePull = pull;
       return true;
     }
 
     if (this.isThrottleHeld) {
-      const { throttleRect } = this;
-      const normalized = 1 - Math.max(0, Math.min(1, (vy - throttleRect.y - 16) / (throttleRect.h - 32)));
+      const normalized = Math.max(0, Math.min(1, (300 - vy) / 100));
       gameState.updateFlags({ throttle: Math.round(normalized * 100) });
       return true;
     }
@@ -591,13 +697,15 @@ export class CabinScene {
       return true;
     }
 
-    // 2. Whistle cord pull
-    if (
-      vx >= this.whistleRect.x - 15 &&
-      vx <= this.whistleRect.x + this.whistleRect.w + 15 &&
-      vy >= this.whistleRect.y &&
-      vy <= this.whistleRect.y + this.whistleRect.h + 20
-    ) {
+    // 2. Whistle cord pull (support artwork cord at x~398 and original at x~500)
+    const isWhistle =
+      (vx >= this.whistleRect.x - 25 &&
+        vx <= this.whistleRect.x + this.whistleRect.w + 25 &&
+        vy >= this.whistleRect.y &&
+        vy <= this.whistleRect.y + this.whistleRect.h + 30) ||
+      (vx >= 370 && vx <= 430 && vy >= 10 && vy <= 160);
+
+    if (isWhistle) {
       this.isWhistleHeld = true;
       this.whistlePull = 1.0;
       soundFX.playWhistle();
@@ -605,16 +713,19 @@ export class CabinScene {
       return true;
     }
 
-    // 3. Firebox click (toggle door or feed wood)
+    // 3. Firebox click (support artwork firebox at x~535 and original at x~250)
     const { fireboxRect } = this;
-    if (
-      vx >= fireboxRect.x &&
-      vx <= fireboxRect.x + fireboxRect.w &&
-      vy >= fireboxRect.y &&
-      vy <= fireboxRect.y + fireboxRect.h
-    ) {
+    const isFirebox =
+      (vx >= fireboxRect.x &&
+        vx <= fireboxRect.x + fireboxRect.w &&
+        vy >= fireboxRect.y &&
+        vy <= fireboxRect.y + fireboxRect.h) ||
+      (vx >= 490 && vx <= 635 && vy >= 170 && vy <= 320);
+
+    if (isFirebox) {
       if (gameState.hasItem('branques') || gameState.get().selectedItemId === 'branques') {
         this.isFireboxOpen = true;
+        this.fireboxSparkTime = 2.0;
         soundFX.playShovel();
         gameState.removeItem('branques');
         gameState.updateFlags({
@@ -642,23 +753,22 @@ export class CabinScene {
       return true;
     }
 
-    // 4. Throttle Lever click / drag
+    // 4. Throttle Lever click / drag (support artwork lever at x~295 and original at x~440)
     const { throttleRect } = this;
-    if (
-      vx >= throttleRect.x - 10 &&
-      vx <= throttleRect.x + throttleRect.w + 10 &&
-      vy >= throttleRect.y &&
-      vy <= throttleRect.y + throttleRect.h
-    ) {
-      this.isThrottleHeld = true;
-      const normalized = 1 - Math.max(0, Math.min(1, (vy - throttleRect.y - 16) / (throttleRect.h - 32)));
-      const newThrottle = Math.round(normalized * 100);
-      gameState.updateFlags({ throttle: newThrottle });
+    const isThrottle =
+      (vx >= throttleRect.x - 15 &&
+        vx <= throttleRect.x + throttleRect.w + 15 &&
+        vy >= throttleRect.y &&
+        vy <= throttleRect.y + throttleRect.h + 20) ||
+      (vx >= 240 && vx <= 360 && vy >= 190 && vy <= 300);
 
-      if (newThrottle > 20) {
-        soundFX.playLever();
-        speechManager.speak("Endavant el tren!");
-      }
+    if (isThrottle) {
+      this.isThrottleHeld = true;
+      soundFX.playLever();
+      const current = gameState.get().throttle;
+      const nextThrottle = current < 30 ? 75 : Math.min(100, current + 25);
+      gameState.updateFlags({ throttle: nextThrottle });
+      speechManager.speak(`Accelerem el tren! Potència al ${nextThrottle} per cent!`);
       return true;
     }
 

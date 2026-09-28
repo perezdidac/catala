@@ -9,6 +9,7 @@ import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
+import { assetManager } from '../../engine/AssetManager';
 
 export interface Hotspot {
   id: string;
@@ -25,60 +26,60 @@ export class StationScene {
   private animTime: number = 0;
   private wheelAngle: number = 0;
 
-  // Scene hotspots
+  // Scene hotspots - broad touch-friendly hitboxes matching modern pixel artwork & tests
   private hotspots: Hotspot[] = [
     {
       id: 'branches',
       name: 'Les Branques de Pi',
-      x: 395,
-      y: 245,
-      w: 55,
-      h: 30,
+      x: 370,
+      y: 235,
+      w: 80,
+      h: 50,
       cursor: 'pointer'
     },
     {
       id: 'switch_lever',
       name: "La Palanca de Canvi d'Agulla",
-      x: 445,
-      y: 230,
-      w: 48,
-      h: 55,
+      x: 420,
+      y: 220,
+      w: 65,
+      h: 65,
       cursor: 'pointer'
     },
     {
       id: 'stationmaster',
       name: "El Cap d'Estació Pep",
-      x: 345,
-      y: 195,
-      w: 40,
-      h: 68,
+      x: 340,
+      y: 180,
+      w: 125,
+      h: 95,
       cursor: 'pointer'
     },
     {
       id: 'locomotive',
       name: 'La Locomotora El Drac',
-      x: 80,
-      y: 155,
-      w: 240,
-      h: 110,
+      x: 60,
+      y: 140,
+      w: 280,
+      h: 130,
       cursor: 'pointer'
     },
     {
       id: 'clock',
       name: "El Rellotge de l'Estació",
-      x: 420,
-      y: 100,
-      w: 36,
-      h: 36,
+      x: 390,
+      y: 60,
+      w: 75,
+      h: 75,
       cursor: 'pointer'
     },
     {
       id: 'bird',
       name: "L'Ocellet de Pi",
-      x: 555,
-      y: 165,
-      w: 24,
-      h: 24,
+      x: 535,
+      y: 130,
+      w: 55,
+      h: 55,
       cursor: 'pointer'
     }
   ];
@@ -103,90 +104,112 @@ export class StationScene {
     this.animTime += dt;
   }
 
+  private drawSteamPuffs(ctx: CanvasRenderingContext2D, time: number, x: number, y: number): void {
+    ctx.save();
+    for (let i = 0; i < 4; i++) {
+      const puffTime = (time * 1.4 + i * 0.8) % 3.2;
+      const puffY = y - puffTime * 24;
+      const puffX = x - puffTime * 14 + Math.sin(puffTime * 3) * 6;
+      const radius = 6 + puffTime * 7;
+      const alpha = Math.max(0, 0.65 - puffTime * 0.2);
+      ctx.fillStyle = `rgba(248, 250, 252, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(puffX, puffY, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   public render(ctx: CanvasRenderingContext2D): void {
     const time = this.animTime;
     const state = gameState.get();
+    const modernBg = assetManager.getImage('station');
 
-    // 1. Sky Gradient
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 200);
-    skyGrad.addColorStop(0, Sprites.COLORS.skyTop);
-    skyGrad.addColorStop(0.65, Sprites.COLORS.skyMid);
-    skyGrad.addColorStop(1, Sprites.COLORS.skyHorizon);
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, 640, 200);
+    if (modernBg) {
+      // Modern High-Bit Pixel Art Artwork Backdrop
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(modernBg, 0, 0, 640, 360);
+      ctx.restore();
 
-    // 2. Drifting Pixel Clouds
-    Sprites.drawDriftingClouds(ctx, time);
+      // Dynamic animated steam puffs from locomotive chimney
+      this.drawSteamPuffs(ctx, time, 350, 195);
 
-    // 3. Montserrat Mountain Peaks
-    Sprites.drawMountains(ctx, time);
+      // Tactile Pine branches on track (if not yet picked up)
+      if (!state.branchesTaken) {
+        Sprites.drawPineBranches(ctx, 395, 255, this.hoveredHotspotId === 'branches');
+        // Sparkling reminder pulse
+        const sparkle = Math.sin(time * 5) > 0 ? '✨' : '⭐';
+        ctx.font = '14px sans-serif';
+        ctx.fillText(sparkle, 405, 248);
+      }
 
-    // 4. Background Pine Trees
-    Sprites.drawPineTree(ctx, 35, 175, 0.7);
-    Sprites.drawPineTree(ctx, 85, 178, 0.65);
-    Sprites.drawPineTree(ctx, 290, 175, 0.75);
-    Sprites.drawPineTree(ctx, 575, 185, 0.9);
-    Sprites.drawPineTree(ctx, 620, 180, 0.8);
+      // Track switch signal light indicator (green = open, red = blocked)
+      const sigColor = state.switchOpen ? '#22c55e' : '#ef4444';
+      ctx.save();
+      ctx.fillStyle = sigColor;
+      ctx.shadowColor = sigColor;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(430, 235, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      // Procedural fallback while image is loading or in headless tests
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 200);
+      skyGrad.addColorStop(0, Sprites.COLORS.skyTop);
+      skyGrad.addColorStop(0.65, Sprites.COLORS.skyMid);
+      skyGrad.addColorStop(1, Sprites.COLORS.skyHorizon);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 640, 200);
 
-    // 5. Station Platform & Ground
-    ctx.fillStyle = Sprites.COLORS.grassGreen;
-    ctx.fillRect(0, 190, 640, 60);
+      Sprites.drawDriftingClouds(ctx, time);
+      Sprites.drawMountains(ctx, time);
+      Sprites.drawPineTree(ctx, 35, 175, 0.7);
+      Sprites.drawPineTree(ctx, 85, 178, 0.65);
+      Sprites.drawPineTree(ctx, 290, 175, 0.75);
+      Sprites.drawPineTree(ctx, 575, 185, 0.9);
+      Sprites.drawPineTree(ctx, 620, 180, 0.8);
 
-    // Platform pavement
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(240, 215, 400, 30);
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(240, 243, 400, 2);
+      ctx.fillStyle = Sprites.COLORS.grassGreen;
+      ctx.fillRect(0, 190, 640, 60);
 
-    // 6. Station Building "L'Estació dels Pins"
-    Sprites.drawStationBuilding(ctx, 330, 215, time);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(240, 215, 400, 30);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(240, 243, 400, 2);
 
-    // 7. Stationmaster Pep
-    Sprites.drawStationmaster(
-      ctx,
-      345,
-      242,
-      time,
-      dialogOverlay.isOpen()
-    );
+      Sprites.drawStationBuilding(ctx, 330, 215, time);
+      Sprites.drawStationmaster(ctx, 345, 242, time, dialogOverlay.isOpen());
+      Sprites.drawBird(ctx, 560, 180, time);
+      Sprites.drawRailwayTracks(ctx, 0, 640, 255);
+      Sprites.drawLocomotive(ctx, 160, 258, time, true, this.wheelAngle);
+      Sprites.drawTrackSwitch(ctx, 410, 255, state.switchOpen, this.hoveredHotspotId === 'switch_lever');
 
-    // 8. Singing Bird on fence
-    Sprites.drawBird(ctx, 560, 180, time);
-
-    // 9. Railway Tracks
-    Sprites.drawRailwayTracks(ctx, 0, 640, 255);
-
-    // 10. Steam Locomotive "El Drac"
-    Sprites.drawLocomotive(ctx, 160, 258, time, true, this.wheelAngle);
-
-    // 11. Track Switch & Lever
-    Sprites.drawTrackSwitch(
-      ctx,
-      410,
-      255,
-      state.switchOpen,
-      this.hoveredHotspotId === 'switch_lever'
-    );
-
-    // 12. Fallen Pine Branches (if not yet picked up)
-    if (!state.branchesTaken) {
-      Sprites.drawPineBranches(
-        ctx,
-        415,
-        258,
-        this.hoveredHotspotId === 'branches'
-      );
+      if (!state.branchesTaken) {
+        Sprites.drawPineBranches(ctx, 415, 258, this.hoveredHotspotId === 'branches');
+      }
     }
 
-    // 13. Hotspot Hover Name Tag above the scene
+    // Interactive Hotspot Hover Highlight & Tactile Name Tag
     if (this.hoveredHotspotId) {
       const hs = this.hotspots.find((h) => h.id === this.hoveredHotspotId);
       if (hs) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-        ctx.fillRect(180, 8, 280, 24);
+        // Glowing gold highlight outline around the hovered object
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(hs.x, hs.y, hs.w, hs.h);
+        ctx.restore();
+
+        // High-contrast Catalan label pill at top
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.fillRect(180, 8, 280, 26);
         ctx.strokeStyle = Sprites.COLORS.goldBrass;
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(180, 8, 280, 24);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(180, 8, 280, 26);
 
         ctx.fillStyle = '#fef08a';
         ctx.font = 'bold 11px sans-serif';

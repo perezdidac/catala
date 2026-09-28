@@ -7,6 +7,7 @@ import { SceneManager } from './game/SceneManager';
 import { InputManager } from './engine/InputManager';
 import { soundFX } from './engine/SoundFX';
 import { gameState } from './game/GameState';
+import { assetManager } from './engine/AssetManager';
 
 class App {
   private renderer: CanvasRenderer;
@@ -83,6 +84,18 @@ class App {
       artGalleryBtn.addEventListener('click', () => {
         soundFX.init();
         soundFX.playClick();
+
+        // Ensure all gallery modal images use inlined high-res data URLs
+        const galleryImages = galleryModal.querySelectorAll<HTMLImageElement>('.gallery-card img');
+        if (galleryImages.length >= 6) {
+          galleryImages[0].src = assetManager.getArtSource('station');
+          galleryImages[1].src = assetManager.getArtSource('cabin');
+          galleryImages[2].src = assetManager.getArtSource('bridge');
+          galleryImages[3].src = assetManager.getArtSource('castle');
+          galleryImages[4].src = assetManager.getArtSource('seaside');
+          galleryImages[5].src = assetManager.getArtSource('items');
+        }
+
         galleryModal.classList.remove('hidden');
       });
       closeGalleryModal.addEventListener('click', () => {

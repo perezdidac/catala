@@ -1,11 +1,14 @@
 /**
- * CanvasRenderer: 640x360 Retro Pixel Buffer & Crisp Scaler
+ * CanvasRenderer: High-Fidelity Retro Pixel Buffer & Smooth Scaler
  * Manages crisp pixel rendering, letterboxing, and pointer coordinate mapping.
+ * Uses an internal 2x high-density render buffer (1280x720) with virtual 640x360 coordinates
+ * to ensure modern high-bit pixel art, text, and effects render with crystal clarity.
  */
 
 export class CanvasRenderer {
   public static readonly VIRTUAL_WIDTH = 640;
   public static readonly VIRTUAL_HEIGHT = 360;
+  public static readonly RENDER_SCALE = 2; // 1280x720 high-fidelity internal rendering
 
   private screenCanvas: HTMLCanvasElement;
   private screenCtx: CanvasRenderingContext2D;
@@ -21,25 +24,26 @@ export class CanvasRenderer {
     this.screenCanvas = document.createElement('canvas');
     this.screenCanvas.id = 'game-canvas';
     this.screenCanvas.style.display = 'block';
-    this.screenCanvas.style.imageRendering = 'pixelated';
-    this.screenCanvas.style.imageRendering = 'crisp-edges';
+    this.screenCanvas.style.imageRendering = 'auto'; // Smooth high-fidelity scaling
     this.screenCanvas.style.touchAction = 'none'; // prevent mobile pinch-zoom
     container.appendChild(this.screenCanvas);
 
     const sCtx = this.screenCanvas.getContext('2d', { alpha: false });
     if (!sCtx) throw new Error('Could not get screen 2D context');
     this.screenCtx = sCtx;
-    this.screenCtx.imageSmoothingEnabled = false;
+    this.screenCtx.imageSmoothingEnabled = true;
+    this.screenCtx.imageSmoothingQuality = 'high';
 
-    // Offscreen 640x360 buffer
+    // Offscreen 1280x720 buffer (2x 640x360 for high-density modern pixel art)
     this.offscreenCanvas = document.createElement('canvas');
-    this.offscreenCanvas.width = CanvasRenderer.VIRTUAL_WIDTH;
-    this.offscreenCanvas.height = CanvasRenderer.VIRTUAL_HEIGHT;
+    this.offscreenCanvas.width = CanvasRenderer.VIRTUAL_WIDTH * CanvasRenderer.RENDER_SCALE;
+    this.offscreenCanvas.height = CanvasRenderer.VIRTUAL_HEIGHT * CanvasRenderer.RENDER_SCALE;
 
     const oCtx = this.offscreenCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
     if (!oCtx) throw new Error('Could not get offscreen 2D context');
     this.ctx = oCtx;
-    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
 
     window.addEventListener('resize', () => this.resizeScreen());
     this.resizeScreen();
@@ -82,7 +86,8 @@ export class CanvasRenderer {
       height: fitHeight
     };
 
-    this.screenCtx.imageSmoothingEnabled = false;
+    this.screenCtx.imageSmoothingEnabled = true;
+    this.screenCtx.imageSmoothingQuality = 'high';
   }
 
   /**
@@ -120,21 +125,22 @@ export class CanvasRenderer {
   }
 
   /**
-   * Blits offscreen 640x360 buffer to screen with rich railway wood framing
+   * Blits offscreen buffer to screen with rich railway wood framing
    */
   public renderToScreen(): void {
-    this.screenCtx.imageSmoothingEnabled = false;
+    this.screenCtx.imageSmoothingEnabled = true;
+    this.screenCtx.imageSmoothingQuality = 'high';
 
     // Draw rich wooden train workbench table for letterbox areas
     this.drawLetterboxBackground();
 
-    // Blit game buffer
+    // Blit game buffer from high-density 1280x720 canvas
     this.screenCtx.drawImage(
       this.offscreenCanvas,
       0,
       0,
-      CanvasRenderer.VIRTUAL_WIDTH,
-      CanvasRenderer.VIRTUAL_HEIGHT,
+      this.offscreenCanvas.width,
+      this.offscreenCanvas.height,
       this.displayRect.x,
       this.displayRect.y,
       this.displayRect.width,
@@ -195,11 +201,21 @@ export class CanvasRenderer {
     }
   }
 
-  // --- Fast pixel art primitives on offscreen buffer ---
+  // --- Fast primitives on offscreen buffer ---
 
-  public clear(color: string = '#000000'): void {
+  public clear(color: string = '#101827'): void {
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.fillStyle = color;
-    this.ctx.fillRect(0, 0, CanvasRenderer.VIRTUAL_WIDTH, CanvasRenderer.VIRTUAL_HEIGHT);
+    this.ctx.fillRect(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
+    // Reapply 2x high-density scale for scene rendering
+    this.ctx.setTransform(
+      CanvasRenderer.RENDER_SCALE,
+      0,
+      0,
+      CanvasRenderer.RENDER_SCALE,
+      0,
+      0
+    );
   }
 
   public fillRect(x: number, y: number, w: number, h: number, color: string): void {

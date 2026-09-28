@@ -1,8 +1,3 @@
-/**
- * SeasideScene: Scene 5 - "La Vall Verda i el Mar" (The Mediterranean Coastal Terminal)
- * Grand Finale Celebration, Alcaldessa Eulàlia, Golden Conductor Medal, and Route Map.
- */
-
 import { gameState, SceneId } from '../GameState';
 import { Sprites } from '../art/Sprites';
 import { PixelPrimitives } from '../art/PixelPrimitives';
@@ -10,16 +5,17 @@ import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
+import { assetManager } from '../../engine/AssetManager';
 
 export class SeasideScene {
   private hoveredHotspotId: string | null = null;
   private animTime: number = 0;
 
   private hotspots = [
-    { id: 'mayor', name: 'Alcaldessa Eulàlia', x: 310, y: 195, w: 45, h: 65 },
-    { id: 'lighthouse', name: 'El Far de la Costa', x: 520, y: 80, w: 40, h: 90 },
-    { id: 'sea', name: 'El Mar Mediterrani', x: 120, y: 140, w: 280, h: 70 },
-    { id: 'locomotive', name: 'La Locomotora El Drac', x: 40, y: 170, w: 220, h: 90 }
+    { id: 'mayor', name: 'Alcaldessa Eulàlia', x: 240, y: 180, w: 120, h: 85 },
+    { id: 'lighthouse', name: 'El Far de la Costa', x: 500, y: 15, w: 110, h: 130 },
+    { id: 'sea', name: 'El Mar Mediterrani', x: 120, y: 60, w: 380, h: 110 },
+    { id: 'locomotive', name: 'La Locomotora El Drac', x: 40, y: 150, w: 420, h: 110 }
   ];
 
   public enter(): void {
@@ -41,58 +37,68 @@ export class SeasideScene {
   public render(ctx: CanvasRenderingContext2D): void {
     const time = this.animTime;
     const state = gameState.get();
+    const modernBg = assetManager.getImage('seaside');
 
-    // 1. Sky & Sun
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 150);
-    skyGrad.addColorStop(0, '#0284c7');
-    skyGrad.addColorStop(1, '#fde047');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, 640, 150);
+    if (modernBg) {
+      // Modern High-Bit Pixel Art Artwork Backdrop
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(modernBg, 0, 0, 640, 360);
+      ctx.restore();
 
-    Sprites.drawDriftingClouds(ctx, time);
-
-    // 2. Mediterranean Sea & Beach & Lighthouse
-    Sprites.drawSeasideView(ctx, time);
-
-    // 3. Decorated Station Platform with Bunting Flags
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(180, 220, 460, 30);
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(180, 248, 460, 2);
-
-    // Bunting / Garland flags
-    const flagColors = ['#dc2626', '#facc15', '#3b82f6', '#16a34a', '#ec4899'];
-    for (let f = 0; f < 18; f++) {
-      const fx = 180 + f * 24;
-      const fy = 200 + Math.sin(f * 0.8) * 3;
-      ctx.fillStyle = flagColors[f % flagColors.length];
-      ctx.beginPath();
-      ctx.moveTo(fx, fy);
-      ctx.lineTo(fx + 10, fy);
-      ctx.lineTo(fx + 5, fy + 10);
-      ctx.fill();
-    }
-
-    // 4. Tracks
-    Sprites.drawRailwayTracks(ctx, 0, 640, 255);
-
-    // 5. Locomotive at the terminus buffer stop
-    Sprites.drawLocomotive(ctx, 110, 258, time, true, 0);
-
-    // Buffer stop (buffer block at track end)
-    PixelPrimitives.drawBeveledRect(ctx, 330, 240, 16, 22, '#dc2626', '#f87171', '#7f1d1d', 2);
-
-    // 6. Alcaldessa Eulàlia
-    Sprites.drawMayor(ctx, 360, 245, time, dialogOverlay.isOpen());
-
-    // 7. Confetti celebration if grand celebration passed
-    if (state.grandCelebration) {
-      for (let c = 0; c < 30; c++) {
-        const cx = (c * 22 + Math.sin(time * 5 + c) * 20) % 640;
-        const cy = ((time * 40 + c * 25) % 260);
-        ctx.fillStyle = flagColors[c % flagColors.length];
-        ctx.fillRect(cx, cy, 3, 3);
+      // Sparkling sea waves
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      for (let s = 0; s < 6; s++) {
+        const sx = 200 + Math.sin(time * 3 + s * 1.8) * 120;
+        const sy = 85 + s * 12;
+        ctx.fillRect(sx, sy, 18, 2);
       }
+      ctx.restore();
+
+      // Celebratory festival confetti falling down
+      const confettiColors = ['#f43f5e', '#3b82f6', '#eab308', '#22c55e', '#a855f7'];
+      for (let c = 0; c < 16; c++) {
+        const cx = (c * 42 + Math.sin(time * 2 + c) * 20) % 640;
+        const cy = ((time * 35 + c * 38) % 360);
+        ctx.fillStyle = confettiColors[c % confettiColors.length];
+        ctx.fillRect(cx, cy, 3, 4);
+      }
+    } else {
+      // Procedural fallback
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 150);
+      skyGrad.addColorStop(0, '#0284c7');
+      skyGrad.addColorStop(1, '#fde047');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 640, 150);
+
+      Sprites.drawDriftingClouds(ctx, time);
+      Sprites.drawSeasideView(ctx, time);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(180, 220, 460, 30);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(180, 248, 460, 2);
+
+      const flagColors = ['#dc2626', '#facc15', '#3b82f6', '#16a34a', '#ec4899'];
+      for (let f = 0; f < 18; f++) {
+        const fx = 180 + f * 24;
+        const fy = 200 + Math.sin(f * 0.8) * 3;
+        ctx.fillStyle = flagColors[f % flagColors.length];
+        ctx.beginPath();
+        ctx.moveTo(fx, fy);
+        ctx.lineTo(fx + 10, fy);
+        ctx.lineTo(fx + 5, fy + 10);
+        ctx.fill();
+      }
+
+      Sprites.drawRailwayTracks(ctx, 0, 640, 255);
+      Sprites.drawLocomotive(ctx, 110, 258, time, true, 0);
+      Sprites.drawMayor(ctx, 310, 242, time, dialogOverlay.isOpen());
+
+      // Buffer stop (buffer block at track end)
+      PixelPrimitives.drawBeveledRect(ctx, 330, 240, 16, 22, '#dc2626', '#f87171', '#7f1d1d', 2);
     }
 
     // 8. Hotspot Hover Name Tag

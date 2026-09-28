@@ -1,8 +1,3 @@
-/**
- * CastleScene: Scene 4 - "El Castell de la Roca" (The Mountain Castle Station)
- * Medieval castle, Ticket Inspector Montserrat, departure bell, and mountain tunnel.
- */
-
 import { gameState } from '../GameState';
 import { Sprites } from '../art/Sprites';
 import { PixelPrimitives } from '../art/PixelPrimitives';
@@ -10,17 +5,18 @@ import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
+import { assetManager } from '../../engine/AssetManager';
 
 export class CastleScene {
   private hoveredHotspotId: string | null = null;
   private animTime: number = 0;
 
   private hotspots = [
-    { id: 'inspector', name: 'Revisora Montserrat', x: 310, y: 195, w: 42, h: 65 },
-    { id: 'bell', name: 'La Campana de Sortida', x: 260, y: 180, w: 32, h: 45 },
-    { id: 'castle', name: 'El Castell de la Roca', x: 420, y: 50, w: 100, h: 100 },
-    { id: 'tunnel', name: 'El Túnel de la Muntanya', x: 520, y: 170, w: 100, h: 90 },
-    { id: 'locomotive', name: 'La Locomotora El Drac', x: 60, y: 155, w: 180, h: 100 }
+    { id: 'inspector', name: 'Revisora Montserrat', x: 300, y: 180, w: 200, h: 95 },
+    { id: 'bell', name: 'La Campana de Sortida', x: 250, y: 110, w: 300, h: 130 },
+    { id: 'castle', name: 'El Castell de la Roca', x: 280, y: 15, w: 250, h: 140 },
+    { id: 'tunnel', name: 'El Túnel de la Muntanya', x: 25, y: 110, w: 600, h: 140 },
+    { id: 'locomotive', name: 'La Locomotora El Drac', x: 50, y: 145, w: 400, h: 120 }
   ];
 
   public enter(): void {
@@ -42,52 +38,61 @@ export class CastleScene {
   public render(ctx: CanvasRenderingContext2D): void {
     const time = this.animTime;
     const state = gameState.get();
+    const modernBg = assetManager.getImage('castle');
 
-    // 1. Sky & Sun
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 180);
-    skyGrad.addColorStop(0, '#38bdf8');
-    skyGrad.addColorStop(1, '#fef08a');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, 640, 180);
+    if (modernBg) {
+      // Modern High-Bit Pixel Art Artwork Backdrop
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(modernBg, 0, 0, 640, 360);
+      ctx.restore();
 
-    Sprites.drawDriftingClouds(ctx, time);
+      // Ringing Bell animation
+      if (state.bellRung) {
+        ctx.save();
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 2;
+        for (let ring = 1; ring <= 3; ring++) {
+          const r = ring * 12 + ((time * 30) % 20);
+          ctx.beginPath();
+          ctx.arc(515, 140, r, -0.6, 0.6);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    } else {
+      // Procedural fallback
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 180);
+      skyGrad.addColorStop(0, '#38bdf8');
+      skyGrad.addColorStop(1, '#fef08a');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 640, 180);
 
-    // 2. Medieval Hill & Castle
-    Sprites.drawCastle(ctx, 450, 120);
+      Sprites.drawDriftingClouds(ctx, time);
+      Sprites.drawCastle(ctx, 450, 120);
 
-    // 3. Platform & Green Hill slopes with olive trees
-    ctx.fillStyle = '#16a34a';
-    ctx.fillRect(0, 190, 640, 65);
+      ctx.fillStyle = '#16a34a';
+      ctx.fillRect(0, 190, 640, 65);
 
-    // Stone Platform
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(200, 215, 340, 30);
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(200, 243, 340, 2);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(200, 215, 340, 30);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(200, 243, 340, 2);
 
-    // 4. Mountain Tunnel Entry (Arched stone tunnel)
-    const tunX = 530;
-    const tunY = 175;
-    PixelPrimitives.drawBeveledRect(ctx, tunX - 10, tunY - 30, 110, 95, '#57534e', '#a8a29e', '#292524', 3);
-    // Dark tunnel interior
-    ctx.fillStyle = '#09090b';
-    ctx.beginPath();
-    ctx.arc(tunX + 45, tunY + 25, 36, Math.PI, 0);
-    ctx.lineTo(tunX + 81, tunY + 65);
-    ctx.lineTo(tunX + 9, tunY + 65);
-    ctx.fill();
+      const tunX = 530;
+      const tunY = 175;
+      PixelPrimitives.drawBeveledRect(ctx, tunX - 10, tunY - 30, 110, 95, '#57534e', '#a8a29e', '#292524', 3);
+      ctx.fillStyle = '#09090b';
+      ctx.beginPath();
+      ctx.arc(tunX + 45, tunY + 25, 36, Math.PI, 0);
+      ctx.fill();
 
-    // 5. Tracks
-    Sprites.drawRailwayTracks(ctx, 0, 640, 255);
-
-    // 6. Locomotive
-    Sprites.drawLocomotive(ctx, 110, 258, time, true, 0);
-
-    // 7. Departure Brass Bell
-    Sprites.drawStationBell(ctx, 275, 205, state.bellRung, time);
-
-    // 8. Revisora Montserrat
-    Sprites.drawInspector(ctx, 310, 242, time, dialogOverlay.isOpen());
+      Sprites.drawRailwayTracks(ctx, 0, 640, 245);
+      Sprites.drawLocomotive(ctx, 140, 248, time, true, 0);
+      Sprites.drawStationBell(ctx, 275, 235, state.bellRung, time);
+      Sprites.drawInspector(ctx, 330, 242, time, !state.allAboardVoiceGatePassed);
+    }
 
     // 9. Hotspot Hover Name Tag
     if (this.hoveredHotspotId) {

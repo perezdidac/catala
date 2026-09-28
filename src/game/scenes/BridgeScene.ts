@@ -1,25 +1,21 @@
-/**
- * BridgeScene: Scene 3 - "El Pont del Riu d'Or" (The Golden River Viaduct)
- * Water crane puzzle, Neus the River Otter, wrench trade, and river crossing.
- */
-
 import { gameState } from '../GameState';
 import { Sprites } from '../art/Sprites';
 import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
+import { assetManager } from '../../engine/AssetManager';
 
 export class BridgeScene {
   private hoveredHotspotId: string | null = null;
   private animTime: number = 0;
 
   private hotspots = [
-    { id: 'water_crane', name: "La Grua d'Aigua", x: 260, y: 140, w: 60, h: 100 },
-    { id: 'otter', name: 'La Llúdriga Neus', x: 380, y: 235, w: 45, h: 45 },
-    { id: 'locomotive', name: 'La Locomotora El Drac', x: 40, y: 155, w: 220, h: 100 },
-    { id: 'river', name: "El Riu d'Or", x: 220, y: 260, w: 200, h: 40 },
-    { id: 'bridge', name: 'El Viaducte de Pedra', x: 440, y: 160, w: 180, h: 90 }
+    { id: 'water_crane', name: "La Grua d'Aigua", x: 250, y: 15, w: 240, h: 140 },
+    { id: 'otter', name: 'La Llúdriga Neus', x: 160, y: 225, w: 280, h: 70 },
+    { id: 'locomotive', name: 'La Locomotora El Drac', x: 40, y: 35, w: 380, h: 120 },
+    { id: 'river', name: "El Riu d'Or", x: 100, y: 210, w: 440, h: 110 },
+    { id: 'bridge', name: 'El Viaducte de Pedra', x: 60, y: 110, w: 520, h: 110 }
   ];
 
   public enter(): void {
@@ -41,41 +37,75 @@ export class BridgeScene {
   public render(ctx: CanvasRenderingContext2D): void {
     const time = this.animTime;
     const state = gameState.get();
+    const modernBg = assetManager.getImage('bridge');
 
-    // 1. Sky & Montserrat/Pyrenees Mountain peaks
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 180);
-    skyGrad.addColorStop(0, '#0284c7');
-    skyGrad.addColorStop(1, '#bae6fd');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, 640, 180);
+    if (modernBg) {
+      // Modern High-Bit Pixel Art Artwork Backdrop
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(modernBg, 0, 0, 640, 360);
+      ctx.restore();
 
-    Sprites.drawDriftingClouds(ctx, time);
-    Sprites.drawMountains(ctx, time);
+      // Dynamic water ripples in the river
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for (let r = 0; r < 5; r++) {
+        const rx = 240 + Math.sin(time * 2 + r * 1.5) * 80;
+        const ry = 250 + r * 12;
+        ctx.fillRect(rx, ry, 24, 2);
+      }
+      ctx.restore();
 
-    // 2. Viaduct Bridge Arches & River Water
-    Sprites.drawViaductBridge(ctx, time);
+      // Water pouring from crane when operated
+      if (state.waterCraneOperated) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(147, 197, 253, 0.85)';
+        for (let w = 0; w < 4; w++) {
+          const flowY = 55 + ((time * 80 + w * 18) % 45);
+          ctx.fillRect(394 + (w % 2) * 2, flowY, 4, 8);
+        }
+        ctx.restore();
+      }
 
-    // 3. Railway Track along top of viaduct
-    Sprites.drawRailwayTracks(ctx, 0, 640, 240);
+      // Sparkle on Neus' wrench if not yet taken
+      if (!state.wrenchCollected) {
+        ctx.font = '14px sans-serif';
+        ctx.fillText('✨', 228, 245 + Math.sin(time * 4) * 3);
+      }
+    } else {
+      // Procedural fallback
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 180);
+      skyGrad.addColorStop(0, '#0284c7');
+      skyGrad.addColorStop(1, '#bae6fd');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 640, 180);
 
-    // 4. Steam Locomotive stopped before the bridge
-    Sprites.drawLocomotive(ctx, 120, 243, time, true, 0);
+      Sprites.drawDriftingClouds(ctx, time);
+      Sprites.drawMountains(ctx, time);
+      Sprites.drawViaductBridge(ctx, time);
+      Sprites.drawRailwayTracks(ctx, 0, 640, 240);
+      Sprites.drawLocomotive(ctx, 120, 243, time, true, 0);
+      Sprites.drawWaterCrane(ctx, 275, 238, state.waterCraneOperated, time);
+      Sprites.drawOtter(ctx, 400, 255, time, !state.wrenchCollected);
+    }
 
-    // 5. Water Crane (running if valve is opened)
-    Sprites.drawWaterCrane(ctx, 275, 238, state.waterCraneOperated, time);
-
-    // 6. La Llúdriga Neus swimming in the river
-    Sprites.drawOtter(ctx, 400, 255, time, !state.wrenchCollected);
-
-    // 7. Hotspot Hover Name Tag
+    // Hotspot Hover Outline & Label Pill
     if (this.hoveredHotspotId) {
       const hs = this.hotspots.find((h) => h.id === this.hoveredHotspotId);
       if (hs) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-        ctx.fillRect(180, 8, 280, 24);
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(hs.x, hs.y, hs.w, hs.h);
+        ctx.restore();
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.fillRect(180, 8, 280, 26);
         ctx.strokeStyle = Sprites.COLORS.goldBrass;
         ctx.lineWidth = 1.5;
-        ctx.strokeRect(180, 8, 280, 24);
+        ctx.strokeRect(180, 8, 280, 26);
 
         ctx.fillStyle = '#fef08a';
         ctx.font = 'bold 11px sans-serif';
