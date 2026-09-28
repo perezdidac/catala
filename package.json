@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && node -e \"require('fs').copyFileSync('dist/index.html', 'El_Conductor_de_Paraules.html'); require('fs').copyFileSync('dist/index.html', 'juga.html'); console.log('Offline standalone files updated: El_Conductor_de_Paraules.html & juga.html');\"",
+    "build": "tsc && vite build && node -e \"const fs = require('fs'); if (!fs.existsSync('docs')) fs.mkdirSync('docs'); fs.copyFileSync('dist/index.html', 'docs/index.html'); fs.copyFileSync('dist/index.html', 'El_Conductor_de_Paraules.html'); fs.copyFileSync('dist/index.html', 'juga.html'); console.log('Standalone & docs files updated for GitHub Pages.');\"",
     "preview": "vite preview",
     "test": "vitest run"
   },

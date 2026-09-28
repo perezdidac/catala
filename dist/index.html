@@ -6,6 +6,13 @@
   <title>El Conductor de Paraules - Aventura de Tren en Català</title>
   <meta name="description" content="Aventura retro de trens en 2D pixel art per aprendre català jugant, dissenyada per a nens i nenes a partir de 5 anys." />
   
+  <script>
+    // If hosted directly on GitHub Pages without Vite dev server, redirect to compiled bundle
+    if (window.location.hostname.endsWith('github.io') && (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html'))) {
+      window.location.replace('./El_Conductor_de_Paraules.html');
+    }
+  </script>
+
   <!-- Friendly Rounded Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
