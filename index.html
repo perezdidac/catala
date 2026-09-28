@@ -456,7 +456,10 @@
   </style>
 
   <script type="module">
-    import('./src/main.ts');
+    const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port === '5173' || location.port === '5174';
+    if (isDev) {
+      import('./src/main.ts');
+    }
   </script>
 </body>
 </html>
