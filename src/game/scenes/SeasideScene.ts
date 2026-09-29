@@ -6,6 +6,7 @@ import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
 import { assetManager } from '../../engine/AssetManager';
+import { particleSystem } from '../../engine/ParticleSystem';
 
 export class SeasideScene {
   private hoveredHotspotId: string | null = null;
@@ -30,8 +31,20 @@ export class SeasideScene {
     }, 200);
   }
 
+  private confettiTimer: number = 0;
+
   public update(dt: number): void {
     this.animTime += dt;
+    if (gameState.get().grandCelebration) {
+      this.confettiTimer += dt;
+      if (this.confettiTimer >= 0.25) {
+        this.confettiTimer = 0;
+        particleSystem.emitConfetti(100 + Math.random() * 440, 20 + Math.random() * 30, 6);
+        if (Math.random() < 0.35) {
+          particleSystem.emitSparkles(Math.random() * 640, Math.random() * 160, 4);
+        }
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
@@ -220,6 +233,10 @@ export class SeasideScene {
               syllables: DIALOGUES.mayorAskVoice.syllables,
               onSuccess: () => {
                 soundFX.playSuccess();
+                particleSystem.emitConfetti(320, 100, 36);
+                particleSystem.emitSparkles(320, 150, 24);
+                gameState.addBadge('badge_medalla_or');
+                gameState.addBadge('badge_visca_el_tren');
                 gameState.updateFlags({
                   celebrationVoiceGatePassed: true,
                   medalAwarded: true,
@@ -252,11 +269,13 @@ export class SeasideScene {
 
       case 'lighthouse':
         soundFX.playWhistle();
+        particleSystem.emitSparkles(545, 55, 14);
         speechManager.speak("El far de la platja il·lumina les barquetes del mar!");
         break;
 
       case 'sea':
         soundFX.playClick();
+        particleSystem.emitWaterSplash(300, 120, 8);
         speechManager.speak("El mar blau té ones suaus i gavines volant!");
         break;
 

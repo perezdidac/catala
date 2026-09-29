@@ -10,6 +10,7 @@ import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
 import { assetManager } from '../../engine/AssetManager';
+import { particleSystem } from '../../engine/ParticleSystem';
 
 export interface Hotspot {
   id: string;
@@ -25,6 +26,7 @@ export class StationScene {
   private hoveredHotspotId: string | null = null;
   private animTime: number = 0;
   private wheelAngle: number = 0;
+  private steamTimer: number = 0;
 
   // Scene hotspots - broad touch-friendly hitboxes matching modern pixel artwork & tests
   private hotspots: Hotspot[] = [
@@ -102,6 +104,11 @@ export class StationScene {
 
   public update(dt: number): void {
     this.animTime += dt;
+    this.steamTimer += dt;
+    if (this.steamTimer >= 0.4) {
+      this.steamTimer = 0;
+      particleSystem.emitSteam(350, 190, 2, 6);
+    }
   }
 
   private drawSteamPuffs(ctx: CanvasRenderingContext2D, time: number, x: number, y: number): void {
@@ -273,6 +280,8 @@ export class StationScene {
         } else if (verb === 'AGAFA') {
           // Take the branches!
           soundFX.playPickup();
+          particleSystem.emitSparkles(395, 255, 12);
+          gameState.addBadge('badge_branques');
           gameState.updateFlags({ branchesTaken: true });
           gameState.addItem({
             id: 'branques',
@@ -388,6 +397,9 @@ export class StationScene {
           // Move the lever!
           if (!state.switchOpen) {
             soundFX.playLever();
+            particleSystem.emitRing(430, 235, '#22c55e', 30);
+            particleSystem.emitSparkles(430, 235, 14);
+            gameState.addBadge('badge_obre_via');
             gameState.updateFlags({ switchOpen: true });
             dialogOverlay.show({
               title: DIALOGUES.switchOpened.title,
@@ -416,6 +428,7 @@ export class StationScene {
           speechManager.speak("La locomotora és gegant! No cap a la maleta!");
         } else if (verb === 'PARLA') {
           soundFX.playWhistle();
+          particleSystem.emitSteam(350, 185, 4, 8);
           speechManager.speak("La locomotora respon amb el xiulet: Tuuuut!");
         } else if (verb === 'CONDUEIX') {
           if (!state.switchOpen) {
@@ -429,6 +442,7 @@ export class StationScene {
           } else {
             // All cleared! Enter cabin!
             soundFX.playBell();
+            particleSystem.emitSparkles(320, 180, 16);
             gameState.setScene('cabin');
           }
         }
@@ -436,11 +450,13 @@ export class StationScene {
 
       case 'clock':
         soundFX.playClick();
+        particleSystem.emitRing(425, 100, '#fef08a', 20);
         speechManager.speak("Són les dotze en punt! L'hora en què surt el tren dels Pins.");
         break;
 
       case 'bird':
         soundFX.playBirdChirp();
+        particleSystem.emitSparkles(560, 150, 8);
         speechManager.speak("L'ocellet canta: Piu, piu, piu!");
         break;
     }

@@ -1,4 +1,4 @@
-node_modules/.vite/
+node_modules/
 dist/dev.html
 *.log
 .DS_Store

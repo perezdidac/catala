@@ -60,9 +60,22 @@ export interface GameStateData {
   celebrationVoiceGatePassed: boolean;
   medalAwarded: boolean;
   grandCelebration: boolean;
+
+  // Passport & Co-op Features
+  avatarId: string;
+  childName: string;
+  badges: string[];
+  parentModeEnabled: boolean;
+
+  // Atmosphere & Extras
+  weather: 'sol' | 'capvespre' | 'nit' | 'pluja';
+  animalsBoarded: string[];
+  customTracks: { x: number; y: number; type: string }[];
 }
 
 export type StateListener = (state: GameStateData) => void;
+
+const STORAGE_KEY = 'word_conductor_save_v1';
 
 export class GameState {
   private state: GameStateData;
@@ -70,6 +83,7 @@ export class GameState {
 
   constructor() {
     this.state = this.getInitialState();
+    this.loadFromStorage();
   }
 
   public getInitialState(): GameStateData {
@@ -79,6 +93,14 @@ export class GameState {
       inventory: [],
       selectedItemId: null,
       unlockedScenes: ['station'],
+      avatarId: 'conductor_boy',
+      childName: 'Petit Maquinista',
+      badges: ['badge_inici'],
+      parentModeEnabled: false,
+
+      weather: 'sol',
+      animalsBoarded: [],
+      customTracks: [],
 
       // Scene 1
       switchInspected: false,
@@ -132,6 +154,7 @@ export class GameState {
   }
 
   private notify(): void {
+    this.saveToStorage();
     for (const listener of this.listeners) {
       listener(this.state);
     }
@@ -184,7 +207,113 @@ export class GameState {
     this.notify();
   }
 
+  public addBadge(badgeId: string): void {
+    if (!this.state.badges.includes(badgeId)) {
+      this.state.badges = [...this.state.badges, badgeId];
+      this.notify();
+    }
+  }
+
+  public hasBadge(badgeId: string): boolean {
+    return this.state.badges.includes(badgeId);
+  }
+
+  public setAvatar(avatarId: string): void {
+    this.state.avatarId = avatarId;
+    this.notify();
+  }
+
+  public toggleParentMode(): boolean {
+    this.state.parentModeEnabled = !this.state.parentModeEnabled;
+    this.notify();
+    return this.state.parentModeEnabled;
+  }
+
+  public setWeather(weather: 'sol' | 'capvespre' | 'nit' | 'pluja'): void {
+    if (this.state.weather !== weather) {
+      this.state.weather = weather;
+      this.notify();
+    }
+  }
+
+  public setChildName(name: string): void {
+    const trimmed = name.trim();
+    if (trimmed && this.state.childName !== trimmed) {
+      this.state.childName = trimmed;
+      this.notify();
+    }
+  }
+
+  public boardAnimal(animalId: string): void {
+    if (!this.state.animalsBoarded.includes(animalId)) {
+      this.state.animalsBoarded = [...this.state.animalsBoarded, animalId];
+      this.notify();
+    }
+  }
+
+  public hasAnimalBoarded(animalId: string): boolean {
+    return this.state.animalsBoarded.includes(animalId);
+  }
+
+  public setCustomTracks(tracks: { x: number; y: number; type: string }[]): void {
+    this.state.customTracks = [...tracks];
+    this.notify();
+  }
+
+  private saveToStorage(): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const dataToSave = {
+        avatarId: this.state.avatarId,
+        childName: this.state.childName,
+        badges: this.state.badges,
+        unlockedScenes: this.state.unlockedScenes,
+        currentScene: this.state.currentScene,
+        weather: this.state.weather,
+        animalsBoarded: this.state.animalsBoarded,
+        customTracks: this.state.customTracks,
+        parentModeEnabled: this.state.parentModeEnabled
+      };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch {
+      // Ignore quota or disabled localStorage
+    }
+  }
+
+  private loadFromStorage(): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.avatarId) this.state.avatarId = parsed.avatarId;
+          if (parsed.childName) this.state.childName = parsed.childName;
+          if (Array.isArray(parsed.badges)) this.state.badges = parsed.badges;
+          if (Array.isArray(parsed.unlockedScenes) && parsed.unlockedScenes.length > 0) {
+            this.state.unlockedScenes = parsed.unlockedScenes;
+          }
+          if (parsed.weather) this.state.weather = parsed.weather;
+          if (Array.isArray(parsed.animalsBoarded)) this.state.animalsBoarded = parsed.animalsBoarded;
+          if (Array.isArray(parsed.customTracks)) this.state.customTracks = parsed.customTracks;
+        }
+      }
+    } catch {
+      // Ignore corrupted storage
+    }
+  }
+
+  public clearStorage(): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+  }
+
   public reset(): void {
+    this.clearStorage();
     this.state = this.getInitialState();
     this.notify();
   }

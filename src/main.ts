@@ -8,6 +8,10 @@ import { InputManager } from './engine/InputManager';
 import { soundFX } from './engine/SoundFX';
 import { gameState } from './game/GameState';
 import { assetManager } from './engine/AssetManager';
+import { passportModal } from './game/ui/PassportModal';
+import { mapModal } from './game/ui/MapModal';
+import { trackBuilderModal } from './game/ui/TrackBuilderModal';
+import { weatherSystem } from './engine/WeatherSystem';
 
 class App {
   private renderer: CanvasRenderer;
@@ -26,10 +30,89 @@ class App {
     this.inputManager = new InputManager(this.renderer, this.sceneManager);
 
     this.setupUIControls();
+    this.setupStateSubscriptions();
     this.startLoop();
   }
 
+  private setupStateSubscriptions(): void {
+    const badge = document.querySelector('.badge-episode');
+    if (!badge) return;
+
+    const titles: Record<string, string> = {
+      station: "Episodi 1: L'Estació dels Pins",
+      cabin: 'Episodi 2: La Cabina del Maquinista',
+      bridge: "Episodi 3: El Pont del Riu d'Or",
+      castle: 'Episodi 4: El Castell de la Roca',
+      seaside: 'Episodi 5: La Vall Verda i el Mar'
+    };
+
+    gameState.subscribe((state) => {
+      badge.textContent = titles[state.currentScene] || "Aventura de Tren";
+    });
+  }
+
   private setupUIControls(): void {
+    // Passport Modal Button
+    const passportBtn = document.getElementById('btn-passport');
+    if (passportBtn) {
+      passportBtn.addEventListener('click', () => {
+        soundFX.init();
+        passportModal.show();
+      });
+    }
+
+    // Railway Map Modal Button
+    const mapBtn = document.getElementById('btn-map');
+    if (mapBtn) {
+      mapBtn.addEventListener('click', () => {
+        soundFX.init();
+        mapModal.show();
+      });
+    }
+
+    // Track Builder Toy Modal Button
+    const builderBtn = document.getElementById('btn-builder');
+    if (builderBtn) {
+      builderBtn.addEventListener('click', () => {
+        soundFX.init();
+        trackBuilderModal.show();
+      });
+    }
+
+    // Weather Atmosphere Toggle Button
+    const weatherBtn = document.getElementById('btn-weather');
+    if (weatherBtn) {
+      const updateWeatherBtn = (w: string) => {
+        const labels: Record<string, string> = {
+          sol: '☀️ Sol',
+          capvespre: '🌅 Capvespre',
+          nit: '🌙 Nit',
+          pluja: '🌧️ Pluja'
+        };
+        weatherBtn.textContent = labels[w] || '🌤️ Temps';
+      };
+
+      gameState.subscribe((state) => {
+        updateWeatherBtn(state.weather || 'sol');
+      });
+
+      weatherBtn.addEventListener('click', () => {
+        soundFX.init();
+        weatherSystem.cycle();
+      });
+    }
+
+    // Cozy Ambient Music Toggle
+    const musicBtn = document.getElementById('btn-music');
+    if (musicBtn) {
+      musicBtn.addEventListener('click', () => {
+        soundFX.init();
+        const isOn = soundFX.toggleMusic();
+        musicBtn.textContent = isOn ? '🎵 Música ON' : '🎵 Música';
+        musicBtn.style.borderColor = isOn ? '#f59e0b' : '#64748b';
+      });
+    }
+
     // Sound Mute Toggle
     const soundBtn = document.getElementById('btn-sound');
     if (soundBtn) {

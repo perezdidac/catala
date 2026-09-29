@@ -11,6 +11,8 @@ import { SeasideScene } from './scenes/SeasideScene';
 import { VerbBar } from './ui/VerbBar';
 import { InventoryBar } from './ui/InventoryBar';
 import { dialogOverlay } from './ui/DialogOverlay';
+import { particleSystem } from '../engine/ParticleSystem';
+import { weatherSystem } from '../engine/WeatherSystem';
 
 export interface IScene {
   enter: () => void;
@@ -56,13 +58,21 @@ export class SceneManager {
 
   public update(dt: number): void {
     this.getActiveScene().update(dt);
+    particleSystem.update(dt);
+    weatherSystem.update(dt);
   }
 
   public render(ctx: CanvasRenderingContext2D, time: number): void {
     // 1. Render active game scene
     this.getActiveScene().render(ctx);
 
-    // 2. Render UI bars
+    // 2. Render particle system effects (steam, embers, sparkles, water)
+    particleSystem.render(ctx);
+
+    // 3. Render atmospheric Weather Overlay (Day/Night, Sunset tint, Moon/Stars, Rain streaks)
+    weatherSystem.renderOverlay(ctx, time);
+
+    // 4. Render UI bars
     if (this.currentSceneId === 'cabin') {
       // In Cabin view, render inventory shelf so child can use fuel items
       this.inventoryBar.render(ctx, time);

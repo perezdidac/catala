@@ -7,6 +7,7 @@ import { PixelPrimitives } from '../art/PixelPrimitives';
 import { Sprites } from '../art/Sprites';
 import { soundFX } from '../../engine/SoundFX';
 import { speechManager } from '../../engine/SpeechManager';
+import { particleSystem } from '../../engine/ParticleSystem';
 
 export interface DialogConfig {
   speaker?: string;
@@ -104,6 +105,8 @@ export class DialogOverlay {
     this.successTriggered = true;
     this.isListeningMic = false;
     soundFX.playSuccess();
+    particleSystem.emitSparkles(320, 160, 24);
+    particleSystem.emitConfetti(320, 100, 18);
 
     if (this.activeDialog?.onSuccess) {
       this.activeDialog.onSuccess();

@@ -119,6 +119,7 @@ export class StorySimulator {
         });
       } else if (verb === 'AGAFA') {
         gameState.updateFlags({ branchesTaken: true });
+        gameState.addBadge('badge_branques');
         gameState.addItem({
           id: 'branques',
           name: 'Les Branques',
@@ -145,6 +146,7 @@ export class StorySimulator {
             syllables: ['O', 'bre', 'la', 'vi', 'a'],
             onSuccess: () => {
               gameState.updateFlags({ voiceGatePassed: true });
+              gameState.addBadge('badge_obre_via');
               dialogOverlay.show({
                 speaker: "Cap d'Estació Pep",
                 title: 'Molt ben dit!',
@@ -192,19 +194,21 @@ export class StorySimulator {
 
   // --- Cabin Interactions ---
   private interactCabinHotspot(hotspotId: string, _verb: ActionVerb): void {
-    if (hotspotId === 'whistle') {
+    if (hotspotId === 'whistle' || hotspotId === 'whistle_cord') {
+      gameState.addBadge('badge_xiulet');
       gameState.updateFlags({ whistlePulled: true });
     } else if (hotspotId === 'firebox') {
       if (gameState.hasItem('branques')) {
         gameState.removeItem('branques');
+        gameState.addBadge('badge_foc');
         gameState.updateFlags({
           branchesInFirebox: true,
           steamPressure: 100
         });
       }
-    } else if (hotspotId === 'throttle_forward') {
+    } else if (hotspotId === 'throttle_forward' || hotspotId === 'throttle') {
       gameState.updateFlags({ throttle: 80, speedKmh: 45 });
-    } else if (hotspotId === 'bridge' || hotspotId === 'advance_to_bridge') {
+    } else if (hotspotId === 'bridge' || hotspotId === 'advance_to_bridge' || hotspotId === 'next_station_bridge') {
       gameState.setScene('bridge');
     }
   }
@@ -218,6 +222,7 @@ export class StorySimulator {
     gameState.updateFlags({ speedKmh: speed, distanceTraveled: newDist });
 
     if (newDist >= 800) {
+      gameState.addBadge('badge_estacio_2');
       gameState.updateFlags({ episodeCompleted: true, cabinCompleted: true });
     }
   }
@@ -378,5 +383,62 @@ export class StorySimulator {
         });
       }
     }
+  }
+
+  // --- Automated Scene Playthrough Helpers ---
+  public playScene1_Station(): void {
+    this.selectVerb('AGAFA');
+    this.tapHotspot('branches');
+    this.dismissDialog();
+
+    this.selectVerb('PARLA');
+    this.tapHotspot('stationmaster');
+    this.respondVoiceGate('Obre la via');
+    this.dismissDialog();
+
+    this.selectVerb('CONDUEIX');
+    this.tapHotspot('switch_lever');
+    this.dismissDialog();
+
+    this.tapHotspot('locomotive');
+  }
+
+  public playScene2_Cabin(): void {
+    this.tapHotspot('whistle');
+    this.tapHotspot('firebox');
+    this.tapHotspot('throttle_forward');
+    this.advanceCabinSimulation(30);
+  }
+
+  public playScene3_Bridge(): void {
+    this.selectVerb('PARLA');
+    this.tapHotspot('otter');
+    this.respondVoiceGate('Aigua fresca');
+    this.dismissDialog();
+
+    this.selectVerb('CONDUEIX');
+    this.tapHotspot('water_crane');
+    this.dismissDialog();
+
+    this.tapHotspot('locomotive');
+  }
+
+  public playScene4_Castle(): void {
+    this.selectVerb('PARLA');
+    this.tapHotspot('inspector');
+    this.respondVoiceGate('Tots al tren');
+    this.dismissDialog();
+
+    this.tapHotspot('bell');
+
+    this.selectVerb('CONDUEIX');
+    this.tapHotspot('tunnel');
+  }
+
+  public playScene5_Seaside(): void {
+    this.selectVerb('PARLA');
+    this.tapHotspot('mayor');
+    this.respondVoiceGate('Visca el tren');
+    this.dismissDialog();
   }
 }

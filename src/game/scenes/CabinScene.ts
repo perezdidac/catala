@@ -11,6 +11,7 @@ import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES } from '../../data/catalanVocabulary';
 import { assetManager } from '../../engine/AssetManager';
+import { particleSystem } from '../../engine/ParticleSystem';
 
 export class CabinScene {
   private animTime: number = 0;
@@ -103,6 +104,9 @@ export class CabinScene {
       if (newDist >= 800 && !state.episodeCompleted) {
         gameState.updateFlags({ episodeCompleted: true, throttle: 0 });
         soundFX.playSuccess();
+        particleSystem.emitSparkles(320, 180, 20);
+        particleSystem.emitConfetti(320, 120, 25);
+        gameState.addBadge('badge_estacio_2');
         dialogOverlay.show({
           title: DIALOGUES.destinationReached.title,
           text: DIALOGUES.destinationReached.text,
@@ -709,6 +713,9 @@ export class CabinScene {
       this.isWhistleHeld = true;
       this.whistlePull = 1.0;
       soundFX.playWhistle();
+      particleSystem.emitSteam(398, 40, 5, 12);
+      particleSystem.emitRing(398, 60, '#fef08a', 28);
+      gameState.addBadge('badge_xiulet');
       speechManager.speak("TUUU-TUUUUT! El xiulet fa sonar el vapor!");
       return true;
     }
@@ -727,6 +734,9 @@ export class CabinScene {
         this.isFireboxOpen = true;
         this.fireboxSparkTime = 2.0;
         soundFX.playShovel();
+        particleSystem.emitEmbers(570, 240, 16);
+        particleSystem.emitSparkles(570, 240, 12);
+        gameState.addBadge('badge_foc');
         gameState.removeItem('branques');
         gameState.updateFlags({
           branchesInFirebox: true,

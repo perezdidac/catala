@@ -5,6 +5,7 @@ import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
 import { assetManager } from '../../engine/AssetManager';
+import { particleSystem } from '../../engine/ParticleSystem';
 
 export class BridgeScene {
   private hoveredHotspotId: string | null = null;
@@ -32,6 +33,11 @@ export class BridgeScene {
 
   public update(dt: number): void {
     this.animTime += dt;
+    if (gameState.get().waterCraneOperated) {
+      if (Math.random() < 0.25) {
+        particleSystem.emitWaterSplash(396, 95, 2);
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
@@ -195,6 +201,9 @@ export class BridgeScene {
               targetTokens: VOCABULARY_LIST.aigua_fresca.acceptedRecognitionTokens,
               syllables: DIALOGUES.otterAskVoice.syllables,
               onSuccess: () => {
+                particleSystem.emitSparkles(228, 245, 16);
+                gameState.addBadge('badge_aigua_fresca');
+                gameState.addBadge('badge_clau');
                 gameState.updateFlags({
                   waterVoiceGatePassed: true,
                   wrenchCollected: true
@@ -238,6 +247,9 @@ export class BridgeScene {
           } else if (!state.waterTankFilled) {
             // Fill water!
             soundFX.playLever();
+            particleSystem.emitWaterSplash(396, 95, 14);
+            particleSystem.emitSparkles(396, 95, 10);
+            gameState.addBadge('badge_diposit_aigua');
             gameState.updateFlags({
               waterCraneOperated: true,
               waterTankFilled: true
@@ -270,6 +282,7 @@ export class BridgeScene {
           } else {
             // Success! Head to the Castle!
             soundFX.playWhistle();
+            particleSystem.emitSparkles(320, 180, 16);
             gameState.setScene('castle');
           }
         } else if (verb === 'MIRA') {

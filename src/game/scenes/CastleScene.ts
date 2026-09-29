@@ -6,6 +6,7 @@ import { speechManager } from '../../engine/SpeechManager';
 import { dialogOverlay } from '../ui/DialogOverlay';
 import { DIALOGUES, VOCABULARY_LIST } from '../../data/catalanVocabulary';
 import { assetManager } from '../../engine/AssetManager';
+import { particleSystem } from '../../engine/ParticleSystem';
 
 export class CastleScene {
   private hoveredHotspotId: string | null = null;
@@ -187,6 +188,10 @@ export class CastleScene {
               syllables: DIALOGUES.inspectorAskVoice.syllables,
               onSuccess: () => {
                 soundFX.playBell();
+                particleSystem.emitSparkles(320, 180, 20);
+                particleSystem.emitRing(515, 140, '#fef08a', 36);
+                gameState.addBadge('badge_tots_al_tren');
+                gameState.addBadge('badge_bitllet');
                 gameState.updateFlags({
                   allAboardVoiceGatePassed: true,
                   bellRung: true
@@ -218,12 +223,15 @@ export class CastleScene {
 
       case 'bell':
         soundFX.playBell();
+        particleSystem.emitRing(515, 140, '#fef08a', 45);
+        gameState.addBadge('badge_campana');
         gameState.updateFlags({ bellRung: true });
         speechManager.speak("Ding, dong! La campana de bronze ressona per tota la muntanya!");
         break;
 
       case 'castle':
         soundFX.playClick();
+        particleSystem.emitSparkles(450, 120, 10);
         speechManager.speak("El Castell de la Roca té una bandera catalana que oneja al vent!");
         break;
 
@@ -241,6 +249,8 @@ export class CastleScene {
           } else {
             // Success! Cross tunnel to Seaside!
             soundFX.playWhistle();
+            particleSystem.emitSteam(320, 200, 6, 14);
+            particleSystem.emitSparkles(320, 180, 18);
             gameState.updateFlags({ tunnelCrossed: true });
             gameState.setScene('seaside');
           }
