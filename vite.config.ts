@@ -8,5 +8,8 @@ export default defineConfig({
     target: 'esnext',
     cssCodeSplit: false,
     assetsInlineLimit: 100000000,
+    rollupOptions: {
+      input: 'dev.html',
+    },
   },
 });

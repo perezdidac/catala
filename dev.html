@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>El Conductor de Paraules - Aventura de Tren en Català</title>
+  <meta name="description" content="Aventura retro de trens en 2D pixel art per aprendre català jugant, dissenyada per a nens i nenes a partir de 5 anys." />
+  <!-- Friendly Rounded Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --wood-dark: #2b1407;
+      --wood-light: #5c2c0e;
+      --brass-gold: #f59e0b;
+      --brass-light: #fef08a;
+      --railway-red: #dc2626;
+      --railway-green: #16a34a;
+      --cyan-mira: #00e5ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+      font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
+      color: #f8fafc;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Top Navigation & Status Bar */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 16px;
+      background: linear-gradient(180deg, #3b1d09 0%, #1c0b02 100%);
+      border-bottom: 2px solid var(--brass-gold);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-icon {
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+
+    h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--brass-light);
+      text-shadow: 2px 2px 0px #000;
+    }
+
+    .badge-episode {
+      font-size: 0.75rem;
+      background: var(--railway-red);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: linear-gradient(180deg, #475569 0%, #1e293b 100%);
+      border: 2px solid #64748b;
+      color: #fff;
+      font-size: 1rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .btn-action:hover {
+      background: linear-gradient(180deg, #64748b 0%, #334155 100%);
+      border-color: var(--brass-gold);
+      transform: translateY(-1px);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .btn-parent {
+      background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%);
+      border-color: #60a5fa;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      gap: 6px;
+      padding: 6px 12px;
+    }
+
+    /* Game Canvas Container */
+    #canvas-container {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      height: calc(100vh - 48px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #090d16;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #game-canvas {
+      image-rendering: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      max-width: 100%;
+      max-height: 100%;
+      cursor: crosshair;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+
+    /* Parent Guide Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 3px solid var(--brass-gold);
+      border-radius: 16px;
+      max-width: 620px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+      color: #f8fafc;
+      line-height: 1.5;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 12px;
+    }
+
+    .modal-header h2 {
+      font-size: 1.4rem;
+      color: var(--brass-light);
+    }
+
+    .modal-close {
+      background: #dc2626;
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .guide-section {
+      margin-bottom: 14px;
+    }
+
+    .guide-section h3 {
+      color: #38bdf8;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .verb-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-right: 4px;
+    }
+
+    .pill-mira { background: #00e5ff; color: #000; }
+    .pill-agafa { background: #ffb300; color: #000; }
+    .pill-parla { background: #00e676; color: #000; }
+    .pill-condueix { background: #ff1744; color: #fff; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="title-group">
+        <span class="title-icon">🚂</span>
+        <h1>El Conductor de Paraules</h1>
+        <span class="badge-episode">Episodi 1: L'Estació dels Pins</span>
+      </div>
+
+      <div class="controls-group">
+        <button id="btn-art-gallery" class="btn-action" title="Àlbum d'Il·lustracions Modernes">
+          🖼️ Galeria
+        </button>
+        <button id="btn-parent-guide" class="btn-action btn-parent" title="Guia per a mares i pares">
+          👨‍👩‍👧 Guia per a Pares
+        </button>
+        <button id="btn-sound" class="btn-action" title="Silencia o activa el so">
+          🔊
+        </button>
+        <button id="btn-fullscreen" class="btn-action" title="Pantalla completa">
+          ⛶
+        </button>
+        <button id="btn-reset" class="btn-action" title="Reinicia l'aventura">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <main id="canvas-container">
+      <div id="loading-placeholder" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:#f8fafc; font-family:'Fredoka', sans-serif; text-align:center; padding:20px;">
+        <div style="font-size:3rem; animation: bounce 0.8s infinite alternate ease-in-out;">🚂</div>
+        <p style="color:#f59e0b; font-weight:700; font-size:1.15rem; letter-spacing:0.5px;">Carregant El Conductor de Paraules...</p>
+        <span style="color:#94a3b8; font-size:0.85rem;">Preparant les vies i el xiulet...</span>
+        <div id="file-protocol-tip" style="display:none; margin-top:16px;">
+          <p style="color:#cbd5e1; font-size:0.9rem; margin-bottom:12px;">Has obert el fitxer directament des de la carpeta?</p>
+          <a href="./El_Conductor_de_Paraules.html" style="background:#2563eb; color:white; padding:12px 24px; border-radius:12px; text-decoration:none; font-weight:bold; font-size:1rem; display:inline-block; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+            ▶️ Obre el joc autònom (sense servidor)
+          </a>
+        </div>
+      </div>
+      <script>
+        // If opened directly from Windows Explorer (file:// protocol), automatically forward to standalone bundle
+        if (window.location.protocol === 'file:') {
+          var tip = document.getElementById('file-protocol-tip');
+          if (tip) tip.style.display = 'block';
+          if (!window.location.pathname.includes('El_Conductor_de_Paraules') && !window.location.pathname.includes('/dist/')) {
+            window.location.replace('./El_Conductor_de_Paraules.html');
+          }
+        }
+      </script>
+    </main>
+  </div>
+
+  <!-- Parent Guide Modal -->
+  <div id="parent-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>👨‍👩‍👧 Guia per a Mares i Pares</h2>
+        <button id="close-parent-modal" class="modal-close">✕</button>
+      </div>
+
+      <div class="guide-section">
+        <h3>🌟 Objectiu del Joc</h3>
+        <p>Aquest joc està dissenyat per a infants a partir de <strong>5 anys</strong> que viuen fora de Catalunya per apropar-los a la llengua catalana mitjançant la mecànica dels trens clàssics.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>🎮 Els 4 Verbs d'Acció</h3>
+        <p><span class="verb-pill pill-mira">MIRA</span> Observa i escolta el nom dels objectes i personatges.</p>
+        <p><span class="verb-pill pill-agafa">AGAFA</span> Recull elements (ex: branques) per posar-los a la maleta.</p>
+        <p><span class="verb-pill pill-parla">PARLA</span> Parla amb el Cap d'Estació! Activa el micròfon per dir la paraula màgica (<em>"Obre la via"</em>).</p>
+        <p><span class="verb-pill pill-condueix">CONDUEIX</span> Puja a la cabina del tren per tocar el xiulet, alimentar el foc i accelerar cap a la següent estació!</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>🎤 Porta de Veu & Alternativa Tàctil</h3>
+        <p>El joc utilitza la veu en català (<code>ca-ES</code>). Si el micròfon no està disponible o l'infant té vergonya, hi ha un botó tàctil <strong>"🗣️ Toca per dir-ho!"</strong> que pronuncia la frase i permet avançar sense frustració.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Pixel Art Gallery Modal -->
+  <div id="gallery-modal" class="modal hidden">
+    <div class="modal-content gallery-modal-content">
+      <div class="modal-header">
+        <h2>🖼️ Àlbum d'Il·lustracions Modern Pixel Art</h2>
+        <button id="close-gallery-modal" class="modal-close">✕</button>
+      </div>
+
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">
+        Il·lustracions d'alta definició inspirades en l'estil pixel art modern (Eastward / Sea of Stars) ambientades a Catalunya.
+      </p>
+
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <img src="/assets/art/scene_estacio_pins.jpg" alt="L'Estació dels Pins" loading="lazy" />
+          <div class="card-caption">
+            <strong>1. L'Estació dels Pins</strong>
+            <span>La muntanya de Montserrat, el tren El Drac i en Pep</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/assets/art/scene_cabina_tren.jpg" alt="La Cabina del Maquinista" loading="lazy" />
+          <div class="card-caption">
+            <strong>2. La Cabina del Maquinista</strong>
+            <span>La caldera de foc, els manòmetres i els gira-sols</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="./assets/art/scene_pont_viaducte.jpg" alt="El Pont del Riu d'Or" loading="lazy" />
+          <div class="card-caption">
+            <strong>3. El Pont del Riu d'Or</strong>
+            <span>El viaducte de pedra, la grua d'aigua i la llúdriga Neus</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="./assets/art/scene_castell_roca.jpg" alt="El Castell de la Roca" loading="lazy" />
+          <div class="card-caption">
+            <strong>4. El Castell de la Roca</strong>
+            <span>El castell medieval, el túnel de la muntanya i la campana de sortida</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="./assets/art/scene_mar_costa.jpg" alt="La Vall Verda i el Mar" loading="lazy" />
+          <div class="card-caption">
+            <strong>5. La Vall Verda i el Mar</strong>
+            <span>El mar Mediterrani, la platja, el far de la costa i la festa final</span>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="./assets/art/items_characters_badges.jpg" alt="La Col·lecció del Maquinista" loading="lazy" />
+          <div class="card-caption">
+            <strong>6. La Col·lecció del Maquinista</strong>
+            <span>El bitllet daurat, la clau anglesa i la Medalla d'Or del Maquinista</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .gallery-modal-content {
+      max-width: 900px !important;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .gallery-card {
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--brass-gold);
+    }
+
+    .gallery-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 2px solid #1e293b;
+    }
+
+    .card-caption {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-caption strong {
+      color: var(--brass-light);
+      font-size: 0.95rem;
+    }
+
+    .card-caption span {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      line-height: 1.3;
+    }
+  </style>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

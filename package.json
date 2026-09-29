@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build && node -e \"const fs = require('fs'); if (!fs.existsSync('docs')) fs.mkdirSync('docs'); fs.copyFileSync('dist/index.html', 'docs/index.html'); fs.copyFileSync('dist/index.html', 'El_Conductor_de_Paraules.html'); fs.copyFileSync('dist/index.html', 'juga.html'); console.log('Standalone & docs files updated for GitHub Pages.');\"",
+    "dev": "vite dev.html",
+    "build": "tsc && vite build && node -e \"const fs = require('fs'); if (!fs.existsSync('docs')) fs.mkdirSync('docs'); fs.copyFileSync('dist/dev.html', 'index.html'); fs.copyFileSync('dist/dev.html', 'dist/index.html'); fs.copyFileSync('dist/dev.html', 'docs/index.html'); fs.copyFileSync('dist/dev.html', 'El_Conductor_de_Paraules.html'); fs.copyFileSync('dist/dev.html', 'juga.html'); console.log('Successfully updated root index.html, dist, docs, and standalone bundles.');\"",
     "preview": "vite preview",
     "test": "vitest run"
   },
